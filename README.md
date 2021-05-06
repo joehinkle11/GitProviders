@@ -1,6 +1,6 @@
 # Git Providers
 
-This package allows for the management of git hosting provider access tokens and credentials stored securely in Keychain with simple SwiftUI views.
+This package allows for the management of git hosting provider access tokens, credentials and ssh keys stored securely in Keychain with simple SwiftUI views.
 
 ## Example Usage
 
