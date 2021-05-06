@@ -16,6 +16,8 @@ public final class GitProviderStore: ObservableObject {
     @Published var sshKey: SSHKey? = nil
     
     func refresh() {
+        // load ssh key from keychain
+        self.sshKey = SSHKey.get(from: keychain)
 //        gitProviders = []
 //        // todo: load gitproviders in the given keychain
     }

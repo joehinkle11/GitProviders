@@ -12,8 +12,10 @@ public struct GitProvidersView: View {
     @ObservedObject var gitProviderStore: GitProviderStore
     let appName: String
     
-    @State private var showRemoveConfirmation = false
+    @State private var showAlert: Alerts? = nil
+    
     @State private var gitProviderToRemove: GitProvider? = nil
+    @State private var createSSHKeyWasSuccess = false
     
     public init(
         gitProviderStore: GitProviderStore,
@@ -32,7 +34,7 @@ public struct GitProvidersView: View {
 
 extension GitProvidersView {
     var dataNotice: Text {
-        (Text("\(appName) does NOT store any git provider credentials on its servers. Rather, all access tokens are stored \(Text("securely").bold()) in your iCloud keychain. Neither does \(appName) sync any repository code or ssh keys onto its servers. See our privacy policy for more information.")).font(.footnote)
+        (Text("\(appName) does NOT store any git provider credentials on its servers. Rather, all access tokens, ssh keys, and other sensitve information are stored \(Text("securely").bold()) in your iCloud keychain. Such keys are only brought into memory at point of consumption and are otherwise safely stored in the Secure Enclave. Furthermore, \(appName) does NOT sync any repository code keys onto its servers. See our privacy policy for more information.")).font(.footnote)
     }
     var connectedProvidersHeader: some View {
         HStack {
@@ -52,6 +54,11 @@ extension GitProvidersView {
             Image(systemName: "key.fill")
             Text("SSH Key")
             Spacer()
+            Link(
+                destination: URL(string: "https://docs.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent")!
+            ) {
+                Image(systemName: "questionmark.circle")
+            }
         }
     }
 }
@@ -67,29 +74,46 @@ extension GitProvidersView {
                 }.onDelete {
                     if let first = $0.first, gitProviderStore.gitProviders.count > first {
                         gitProviderToRemove = gitProviderStore.gitProviders[first]
-                        showRemoveConfirmation = true
+                        showAlert = .ShowRemoveConfirmation
                     }
                 }
             }
             Section(header: sshHeader, footer: dataNotice) {
                 if let sshKey = gitProviderStore.sshKey {
-                    
+                    NavigationLink("View SSH Key", destination: SSHKeyDetailsView(sshKey: sshKey))
                 } else {
-                    NavigationLink("Create an SSH Key", destination: SetupSSHKeyView(appName: appName))
+                    Button("Create an SSH Key") {
+                        gitProviderStore.sshKey = SSHKey.generateNew(for: gitProviderStore.keychain)
+                        createSSHKeyWasSuccess = gitProviderStore.sshKey != nil
+                        showAlert = .CreateSSHKeyResult
+                    }
                 }
             }
         }.listStyle(InsetGroupedListStyle())
-        .alert(isPresented: $showRemoveConfirmation) {
-            Alert(
-                title: Text("Are you sure?"),
-                message: Text("Are you sure what want to delete \(gitProviderToRemove?.providerName ?? "")?"),
-                primaryButton: .destructive(Text("Delete"), action: {
-                    if let gitProviderToRemove = gitProviderToRemove {
-                        gitProviderStore.remove(gitProviderToRemove)
-                    }
-                }),
-                secondaryButton: .cancel()
-            )
+        .alert(item: $showAlert) { alert in
+            switch alert {
+            case .ShowRemoveConfirmation:
+                return Alert(
+                    title: Text("Are you sure?"),
+                    message: Text("Are you sure what want to delete \(gitProviderToRemove?.providerName ?? "")?"),
+                    primaryButton: .destructive(Text("Delete"), action: {
+                        if let gitProviderToRemove = gitProviderToRemove {
+                            gitProviderStore.remove(gitProviderToRemove)
+                        }
+                    }),
+                    secondaryButton: .cancel()
+                )
+            case .CreateSSHKeyResult:
+                return Alert(title: Text(createSSHKeyWasSuccess ? "Success" : "Failed"), message: Text(createSSHKeyWasSuccess ? "SSH creation succeeded" : "SSH creation failed"), dismissButton: .default(Text("Okay")))
+            }
         }
+    }
+}
+
+extension GitProvidersView {
+    enum Alerts: Int, Identifiable {
+        var id: Int { rawValue }
+        case ShowRemoveConfirmation
+        case CreateSSHKeyResult
     }
 }
