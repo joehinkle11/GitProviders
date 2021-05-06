@@ -30,8 +30,12 @@ struct SSHKeyDetailsView: View {
                 Spacer()
             }) {
                 if showPrivate {
-                    if let publicKey = sshKey.publicKey?.base64EncodedString() {
-                        CopiableCellView(copiableTest: publicKey)
+                    if let privateKey = sshKey.privateKey?.base64EncodedString() {
+                        CopiableCellView(copiableTest: privateKey)
+                    }
+                } else {
+                    Button("Show Private Key (not recommended)") {
+                        showPrivate = true
                     }
                 }
             }
