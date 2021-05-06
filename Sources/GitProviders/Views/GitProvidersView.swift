@@ -32,10 +32,11 @@ public struct GitProvidersView: View {
 
 extension GitProvidersView {
     var dataNotice: Text {
-        (Text("\(appName) does NOT store any git provider credentials on its servers. Rather, all access tokens are stored \(Text("securely").bold()) in your iCloud keychain. Neither does \(appName) sync any repository code onto its servers. See our privacy policy for more information.")).font(.footnote)
+        (Text("\(appName) does NOT store any git provider credentials on its servers. Rather, all access tokens are stored \(Text("securely").bold()) in your iCloud keychain. Neither does \(appName) sync any repository code or ssh keys onto its servers. See our privacy policy for more information.")).font(.footnote)
     }
     var connectedProvidersHeader: some View {
         HStack {
+            Image(systemName: "wifi")
             Text("Connected Providers")
             Spacer()
             NavigationLink(destination: AddGitProviderView()) {
@@ -46,9 +47,18 @@ extension GitProvidersView {
             }
         }
     }
+    var sshHeader: some View {
+        HStack {
+            Image(systemName: "key.fill")
+            Text("SSH Key")
+            Spacer()
+        }
+    }
+}
+extension GitProvidersView {
     var mainBody: some View {
         List {
-            Section(header: connectedProvidersHeader, footer: dataNotice) {
+            Section(header: connectedProvidersHeader) {
                 if gitProviderStore.gitProviders.count == 0 {
                     Text("No providers.")
                 }
@@ -61,11 +71,18 @@ extension GitProvidersView {
                     }
                 }
             }
+            Section(header: sshHeader, footer: dataNotice) {
+                if let sshKey = gitProviderStore.sshKey {
+                    
+                } else {
+                    NavigationLink("Create an SSH Key", destination: SetupSSHKeyView(appName: appName))
+                }
+            }
         }.listStyle(InsetGroupedListStyle())
         .alert(isPresented: $showRemoveConfirmation) {
             Alert(
                 title: Text("Are you sure?"),
-                message: Text("Are you sure what want to delete \("todo")?"),
+                message: Text("Are you sure what want to delete \(gitProviderToRemove?.providerName ?? "")?"),
                 primaryButton: .destructive(Text("Delete"), action: {
                     if let gitProviderToRemove = gitProviderToRemove {
                         gitProviderStore.remove(gitProviderToRemove)

@@ -11,10 +11,22 @@ enum GitProviderPresets: String {
     case GitLab
     case Custom
     
-    var supportedAccessMethods: [RepositoryAccessMethods] {
+    var supportedContentAccessMethods: [RepositoryAccessMethods] {
         switch self {
         case .GitHub:
-            return [.AccessToken]
+            return [.AccessToken, .SSH]
+        case .BitBucket:
+            return [.SSH]
+        case .GitLab:
+            return [.SSH]
+        case .Custom:
+            return [.SSH]
+        }
+    }
+    var supportedRepoListAccessMethods: [RepositoryListAccessMethods] {
+        switch self {
+        case .GitHub:
+            return [.OAuth]
         case .BitBucket:
             return []
         case .GitLab:

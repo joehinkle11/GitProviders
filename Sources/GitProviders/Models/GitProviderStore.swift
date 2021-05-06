@@ -13,6 +13,7 @@ public final class GitProviderStore: ObservableObject {
     let keychain: Keychain
     
     @Published var gitProviders: [GitProvider] = [.init(providerName: "GitHub", hasRepoListAccess: false, hasRepoContents: true)]
+    @Published var sshKey: SSHKey? = nil
     
     func refresh() {
 //        gitProviders = []
