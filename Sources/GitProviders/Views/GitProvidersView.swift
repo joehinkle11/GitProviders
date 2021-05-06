@@ -49,6 +49,9 @@ extension GitProvidersView {
     var mainBody: some View {
         List {
             Section(header: connectedProvidersHeader, footer: dataNotice) {
+                if gitProviderStore.gitProviders.count == 0 {
+                    Text("No providers.")
+                }
                 ForEach(gitProviderStore.gitProviders) { gitProvider in
                     GitProviderCell(gitProvider: gitProvider)
                 }.onDelete {
@@ -64,7 +67,9 @@ extension GitProvidersView {
                 title: Text("Are you sure?"),
                 message: Text("Are you sure what want to delete \("todo")?"),
                 primaryButton: .destructive(Text("Delete"), action: {
-                    
+                    if let gitProviderToRemove = gitProviderToRemove {
+                        gitProviderStore.remove(gitProviderToRemove)
+                    }
                 }),
                 secondaryButton: .cancel()
             )
