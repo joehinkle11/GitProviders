@@ -78,7 +78,7 @@ extension GitProvidersView {
                         showAlert = .ShowRemoveConfirmation
                     }
                 }
-                NavigationLink(destination: AddGitProviderView()) {
+                NavigationLink(destination: AddGitProviderView(gitProviderStore: gitProviderStore)) {
                     Text("Add New Provider").foregroundColor(.blue)
                 }
             }

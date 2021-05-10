@@ -9,9 +9,10 @@ import SwiftUI
 
 
 struct AddGitProviderCellView: View {
+    @ObservedObject var gitProviderStore: GitProviderStore
     let preset: GitProviderPresets
     
     var body: some View {
-        NavigationLink(preset.rawValue, destination: AddGitProviderDetailsView(preset: preset))
+        NavigationLink(preset.rawValue, destination: AddGitProviderDetailsView(gitProviderStore: gitProviderStore, preset: preset))
     }
 }

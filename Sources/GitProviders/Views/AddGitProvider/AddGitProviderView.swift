@@ -8,16 +8,17 @@
 import SwiftUI
 
 struct AddGitProviderView: View {
+    @ObservedObject var gitProviderStore: GitProviderStore
     
     var mainBody: some View {
         List {
             Section(header: Text("Common Providers")) {
-                AddGitProviderCellView(preset: .GitHub)
-                AddGitProviderCellView(preset: .BitBucket)
-                AddGitProviderCellView(preset: .GitLab)
+                AddGitProviderCellView(gitProviderStore: gitProviderStore, preset: .GitHub)
+                AddGitProviderCellView(gitProviderStore: gitProviderStore, preset: .BitBucket)
+                AddGitProviderCellView(gitProviderStore: gitProviderStore, preset: .GitLab)
             }
             Section(header: Text("Other")) {
-                AddGitProviderCellView(preset: .Custom)
+                AddGitProviderCellView(gitProviderStore: gitProviderStore, preset: .Custom)
             }
         }.listStyle(InsetGroupedListStyle())
     }
