@@ -22,6 +22,8 @@ struct CopiableCellView: View {
             }
         } label: {
             Label(copied ? "Copied" : "Copy", systemImage: copied ? "checkmark" : "doc.on.doc.fill")
+                .font(nil)
+                .frame(width: 100)
         }
     }
 }
