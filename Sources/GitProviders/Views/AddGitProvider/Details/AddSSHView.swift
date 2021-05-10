@@ -52,7 +52,7 @@ struct AddSSHView: View {
     }
     
     func testConnection() {
-        
+        gitProviderStore.moveBackToFirstPage()
     }
     
     var body: some View {

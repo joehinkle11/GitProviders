@@ -31,4 +31,14 @@ public final class GitProviderStore: ObservableObject {
         gitProviderToRemove.remove()
         refresh()
     }
+    
+    
+    //
+    // ui related
+    //
+    @Published var isMovingBackToFirstPage = false
+    
+    func moveBackToFirstPage() {
+        isMovingBackToFirstPage = true
+    }
 }

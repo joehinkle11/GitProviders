@@ -25,11 +25,19 @@ public struct GitProvidersView: View {
     }
     
     public var body: some View {
-        NavigationView {
-            mainBody
-                .navigationTitle("Git Providers")
-                .navigationBarItems(trailing: gitProviderStore.gitProviders.count == 0 ? nil : EditButton())
-        }.navigationViewStyle(StackNavigationViewStyle())
+        if gitProviderStore.isMovingBackToFirstPage {
+            ProgressView().onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    gitProviderStore.isMovingBackToFirstPage = false
+                }
+            }
+        } else {
+            NavigationView {
+                mainBody
+                    .navigationTitle("Git Providers")
+                    .navigationBarItems(trailing: gitProviderStore.gitProviders.count == 0 ? nil : EditButton())
+            }.navigationViewStyle(StackNavigationViewStyle())
+        }
     }
 }
 
