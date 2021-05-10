@@ -35,9 +35,11 @@ struct SSHKeyDetailsView: View {
                     if let publicKey = showPublicKeyAsSSH ? sshKey.publicKeyAsSSHFormat : sshKey.publicKeyAsPEMFormat {
                         CopiableCellView(copiableTest: publicKey)
                     }
-                    Link("Add to GitHub", destination: URL(string: "https://github.com/settings/ssh/new")!)
-                    Link("Add to BitBucket", destination: URL(string: "https://bitbucket.org/account/settings/ssh-keys/")!)
-                    Link("Add to GitLab", destination: URL(string: "https://gitlab.com/-/profile/keys")!)
+                    ForEach(GitProviderPresets.allCases) { preset in
+                        if let addSSHKeyLink = preset.addSSHKeyLink, let url = URL(string: addSSHKeyLink) {
+                            Link("Add to \(preset.rawValue)", destination: url)
+                        }
+                    }
                 }
             }
             if showAdvanced {
