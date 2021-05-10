@@ -11,7 +11,7 @@ import Security
 
 // tuple type for public/private key pair at class level
 typealias KeyPair = (publicKey: SecKey, privateKey: SecKey)
-func generateKeyPair(_ publicTag: String, privateTag: String, keySize: Int) -> KeyPair? {
+func generateKeyPair(_ publicTag: String, privateTag: String, keySize: KeySize) -> KeyPair? {
     var sanityCheck: OSStatus = noErr
     var publicKey: SecKey?
     var privateKey: SecKey?
@@ -23,7 +23,7 @@ func generateKeyPair(_ publicTag: String, privateTag: String, keySize: Int) -> K
     
     // Set top level dictionary for the keypair
     keyPairAttr[(kSecAttrKeyType ) as AnyHashable] = (kSecAttrKeyTypeRSA as Any)
-    keyPairAttr[(kSecAttrKeySizeInBits as AnyHashable)] = Int(keySize)
+    keyPairAttr[(kSecAttrKeySizeInBits as AnyHashable)] = keySize.rawValue
     
     // Set private key dictionary
     privateKeyAttr[(kSecAttrIsPermanent as AnyHashable)] = Int(truncating: true)

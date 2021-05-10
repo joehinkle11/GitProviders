@@ -16,6 +16,7 @@ public struct GitProvidersView: View {
     
     @State private var gitProviderToRemove: GitProvider? = nil
     @State private var createSSHKeyWasSuccess = false
+    @AppStorage("ssh_key_icloud_sync") private var iCloudSync = true
     
     public init(
         gitProviderStore: GitProviderStore,
@@ -63,6 +64,12 @@ extension GitProvidersView {
     }
 }
 extension GitProvidersView {
+    func createSSH(withICloud: Bool) {
+        iCloudSync = withICloud
+        gitProviderStore.sshKey = SSHKey.generateNew(for: gitProviderStore.keychain, withICloudSync: withICloud)
+        createSSHKeyWasSuccess = gitProviderStore.sshKey != nil
+        showAlert = .CreateSSHKeyResult
+    }
     var mainBody: some View {
         List {
             Section(header: connectedProvidersHeader) {
@@ -80,12 +87,15 @@ extension GitProvidersView {
             }
             Section(header: sshHeader, footer: dataNotice) {
                 if let sshKey = gitProviderStore.sshKey {
-                    NavigationLink("View SSH Key", destination: SSHKeyDetailsView(sshKey: sshKey))
+                    NavigationLink("View SSH Key", destination: SSHKeyDetailsView(
+                        sshKey: sshKey,
+                        keychain: gitProviderStore.keychain,
+                        appName: appName,
+                        iCloudSync: $iCloudSync
+                    ))
                 } else {
                     Button("Create an SSH Key") {
-                        gitProviderStore.sshKey = SSHKey.generateNew(for: gitProviderStore.keychain)
-                        createSSHKeyWasSuccess = gitProviderStore.sshKey != nil
-                        showAlert = .CreateSSHKeyResult
+                        showAlert = .CreateSSHKey
                     }
                 }
             }
@@ -103,6 +113,17 @@ extension GitProvidersView {
                     }),
                     secondaryButton: .cancel()
                 )
+            case .CreateSSHKey:
+                return Alert(
+                    title: Text("Create SSH Key"),
+                    message: Text("Would you like to synchronize your key securely through iCloud keychain?"),
+                    primaryButton: .default(Text("Create and Sync").bold(), action: {
+                        createSSH(withICloud: true)
+                    }),
+                    secondaryButton: .default(Text("Create without Sync"), action: {
+                        createSSH(withICloud: false)
+                    })
+                )
             case .CreateSSHKeyResult:
                 return Alert(title: Text(createSSHKeyWasSuccess ? "Success" : "Failed"), message: Text(createSSHKeyWasSuccess ? "SSH creation succeeded" : "SSH creation failed"), dismissButton: .default(Text("Okay")))
             }
@@ -114,6 +135,7 @@ extension GitProvidersView {
     enum Alerts: Int, Identifiable {
         var id: Int { rawValue }
         case ShowRemoveConfirmation
+        case CreateSSHKey
         case CreateSSHKeyResult
     }
 }

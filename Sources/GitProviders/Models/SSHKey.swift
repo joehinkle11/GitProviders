@@ -50,11 +50,17 @@ struct SSHKey {
         return nil
     }
     
-    static func generateNew(for keychain: Keychain) -> SSHKey? {
+    static func generateNew(for keychain: Keychain, withICloudSync: Bool) -> SSHKey? {
         if let bundleId = Bundle.main.bundleIdentifier {
             let publicKeyTag: String = "\(bundleId).publickey"
             let privateKeyTag: String = "\(bundleId).privatekey"
-            let keyPair = generateKeyPair(publicKeyTag, privateTag: privateKeyTag, keySize: 2048)
+            
+            for tag in [publicKeyTag, privateKeyTag] {
+                let deleteQuery: [String: Any] = [kSecAttrApplicationTag as String: tag]
+                SecItemDelete(deleteQuery as CFDictionary)
+            }
+            
+            let keyPair = generateKeyPair(publicKeyTag, privateTag: privateKeyTag, keySize: ._2048)
             
             var pbError:Unmanaged<CFError>?
             var prError:Unmanaged<CFError>?
@@ -70,12 +76,12 @@ struct SSHKey {
             do {
                 // store public key so that it's locked in the secure enclave until someone unlocks the device for the first time after a reboot
                 try keychain
-                    .synchronizable(true)
+                    .synchronizable(withICloudSync)
                     .accessibility(.afterFirstUnlock)
                     .set(pbData, key: defaultPublicKeyKeychainName)
                 // store private key so that it's locked in the secure enclave except when the device is in an unlocked state
                 try keychain
-                    .synchronizable(true)
+                    .synchronizable(withICloudSync)
                     .accessibility(.whenUnlocked)
                     .set(prData, key: defaultPrivateKeyKeychainName)
                 return .init(
