@@ -12,11 +12,9 @@ public struct GitProvidersView: View {
     @ObservedObject var gitProviderStore: GitProviderStore
     let appName: String
     
-    @State private var showAlert: Alerts? = nil
+    @State private var showDeleteConfirmationAlert = false
     
     @State private var gitProviderToRemove: GitProvider? = nil
-    @State private var createSSHKeyWasSuccess = false
-    @AppStorage("ssh_key_icloud_sync") private var iCloudSync = true
     
     public init(
         gitProviderStore: GitProviderStore,
@@ -28,7 +26,9 @@ public struct GitProvidersView: View {
     
     public var body: some View {
         NavigationView {
-            mainBody.navigationTitle("Git Providers")
+            mainBody
+                .navigationTitle("Git Providers")
+                .navigationBarItems(trailing: gitProviderStore.gitProviders.count == 0 ? nil : EditButton())
         }.navigationViewStyle(StackNavigationViewStyle())
     }
 }
@@ -58,12 +58,6 @@ extension GitProvidersView {
     }
 }
 extension GitProvidersView {
-    func createSSH(withICloud: Bool) {
-        iCloudSync = withICloud
-        gitProviderStore.sshKey = SSHKey.generateNew(for: gitProviderStore.keychain, withICloudSync: withICloud, keySize: ._2048, keyType: .RSA)
-        createSSHKeyWasSuccess = gitProviderStore.sshKey != nil
-        showAlert = .CreateSSHKeyResult
-    }
     var showBottomPart: Bool {
         gitProviderStore.gitProviders.count > 0 || gitProviderStore.sshKey != nil
     }
@@ -75,7 +69,7 @@ extension GitProvidersView {
                 }.onDelete {
                     if let first = $0.first, gitProviderStore.gitProviders.count > first {
                         gitProviderToRemove = gitProviderStore.gitProviders[first]
-                        showAlert = .ShowRemoveConfirmation
+                        showDeleteConfirmationAlert = true
                     }
                 }
                 NavigationLink(destination: AddGitProviderView(gitProviderStore: gitProviderStore)) {
@@ -84,57 +78,27 @@ extension GitProvidersView {
             }
             if showBottomPart {
                 Section(header: sshHeader, footer: dataNotice) {
-                    if let sshKey = gitProviderStore.sshKey {
+                    CreateSSHIfNeededView(gitProviderStore: gitProviderStore) { sshKey in
                         NavigationLink("View SSH Key", destination: SSHKeyDetailsView(
                             sshKey: sshKey,
                             keychain: gitProviderStore.keychain,
-                            appName: appName,
-                            iCloudSync: $iCloudSync
+                            appName: appName
                         ))
-                    } else {
-                        Button("Create an SSH Key") {
-                            showAlert = .CreateSSHKey
-                        }
                     }
                 }
             }
         }.listStyle(InsetGroupedListStyle())
-        .alert(item: $showAlert) { alert in
-            switch alert {
-            case .ShowRemoveConfirmation:
-                return Alert(
-                    title: Text("Are you sure?"),
-                    message: Text("Are you sure what want to delete \(gitProviderToRemove?.providerName ?? "")?"),
-                    primaryButton: .destructive(Text("Delete"), action: {
-                        if let gitProviderToRemove = gitProviderToRemove {
-                            gitProviderStore.remove(gitProviderToRemove)
-                        }
-                    }),
-                    secondaryButton: .cancel()
-                )
-            case .CreateSSHKey:
-                return Alert(
-                    title: Text("Create SSH Key"),
-                    message: Text("Would you like to synchronize your key securely through the iCloud Keychain?"),
-                    primaryButton: .default(Text("Create and Sync"), action: {
-                        createSSH(withICloud: true)
-                    }),
-                    secondaryButton: .destructive(Text("Create without Sync"), action: {
-                        createSSH(withICloud: false)
-                    })
-                )
-            case .CreateSSHKeyResult:
-                return Alert(title: Text(createSSHKeyWasSuccess ? "Success" : "Failed"), message: Text(createSSHKeyWasSuccess ? "SSH creation succeeded" : "SSH creation failed"), dismissButton: .default(Text("Okay")))
-            }
+        .alert(isPresented: $showDeleteConfirmationAlert) {
+            Alert(
+                title: Text("Are you sure?"),
+                message: Text("Are you sure what want to delete \(gitProviderToRemove?.providerName ?? "")?"),
+                primaryButton: .destructive(Text("Delete"), action: {
+                    if let gitProviderToRemove = gitProviderToRemove {
+                        gitProviderStore.remove(gitProviderToRemove)
+                    }
+                }),
+                secondaryButton: .cancel()
+            )
         }
-    }
-}
-
-extension GitProvidersView {
-    enum Alerts: Int, Identifiable {
-        var id: Int { rawValue }
-        case ShowRemoveConfirmation
-        case CreateSSHKey
-        case CreateSSHKeyResult
     }
 }

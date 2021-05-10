@@ -12,7 +12,7 @@ struct SSHKeyDetailsView: View {
     @State var sshKey: SSHKey? = nil
     let keychain: Keychain
     let appName: String
-    @Binding var iCloudSync: Bool
+    @AppStorage("ssh_key_icloud_sync") private var iCloudSync = true
     @State var keyType: KeyType = .RSA
     @State var keySize: KeySize = ._2048
     
@@ -33,7 +33,7 @@ struct SSHKeyDetailsView: View {
                     }
                 }) {
                     if let publicKey = showPublicKeyAsSSH ? sshKey.publicKeyAsSSHFormat : sshKey.publicKeyAsPEMFormat {
-                        CopiableCellView(copiableTest: publicKey)
+                        CopiableCellView(copiableText: publicKey)
                     }
                     ForEach(GitProviderPresets.allCases) { preset in
                         if let addSSHKeyLink = preset.addSSHKeyLink, let url = URL(string: addSSHKeyLink) {
@@ -51,7 +51,7 @@ struct SSHKeyDetailsView: View {
                     }) {
                         if showPrivate {
                             if let privateKey = sshKey.privateKeyAsPEMString {
-                                CopiableCellView(copiableTest: privateKey)
+                                CopiableCellView(copiableText: privateKey)
                             }
                         } else {
                             Button("Show Private Key (not recommended)") {

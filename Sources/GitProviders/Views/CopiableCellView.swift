@@ -8,14 +8,14 @@
 import SwiftUI
 
 struct CopiableCellView: View {
-    let copiableTest: String
+    let copiableText: String
     
     @State private var copied = false
     
     var body: some View {
-        Text(copiableTest)
+        Text(copiableText)
         Button {
-            UIPasteboard.general.string = copiableTest
+            UIPasteboard.general.string = copiableText
             copied = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                 copied = false

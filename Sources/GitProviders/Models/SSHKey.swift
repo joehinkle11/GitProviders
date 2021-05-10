@@ -64,6 +64,8 @@ struct SSHKey {
                 SecItemDelete(deleteQuery as CFDictionary)
             }
             
+            // todo: reset all git providers using this key
+            
             let keyPair = generateKeyPair(publicKeyTag, privateTag: privateKeyTag, keySize: keySize)
             
             var pbError:Unmanaged<CFError>?
