@@ -50,7 +50,11 @@ struct SSHKey {
         return nil
     }
     
-    static func generateNew(for keychain: Keychain, withICloudSync: Bool) -> SSHKey? {
+    static func generateNew(for keychain: Keychain, withICloudSync: Bool, keySize: KeySize, keyType: KeyType) -> SSHKey? {
+        guard keyType == .RSA else {
+            // todo: support other key types
+            return nil
+        }
         if let bundleId = Bundle.main.bundleIdentifier {
             let publicKeyTag: String = "\(bundleId).publickey"
             let privateKeyTag: String = "\(bundleId).privatekey"
@@ -60,7 +64,7 @@ struct SSHKey {
                 SecItemDelete(deleteQuery as CFDictionary)
             }
             
-            let keyPair = generateKeyPair(publicKeyTag, privateTag: privateKeyTag, keySize: ._2048)
+            let keyPair = generateKeyPair(publicKeyTag, privateTag: privateKeyTag, keySize: keySize)
             
             var pbError:Unmanaged<CFError>?
             var prError:Unmanaged<CFError>?

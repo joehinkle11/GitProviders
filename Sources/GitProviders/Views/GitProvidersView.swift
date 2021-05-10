@@ -66,7 +66,7 @@ extension GitProvidersView {
 extension GitProvidersView {
     func createSSH(withICloud: Bool) {
         iCloudSync = withICloud
-        gitProviderStore.sshKey = SSHKey.generateNew(for: gitProviderStore.keychain, withICloudSync: withICloud)
+        gitProviderStore.sshKey = SSHKey.generateNew(for: gitProviderStore.keychain, withICloudSync: withICloud, keySize: ._2048, keyType: .RSA)
         createSSHKeyWasSuccess = gitProviderStore.sshKey != nil
         showAlert = .CreateSSHKeyResult
     }
@@ -116,11 +116,11 @@ extension GitProvidersView {
             case .CreateSSHKey:
                 return Alert(
                     title: Text("Create SSH Key"),
-                    message: Text("Would you like to synchronize your key securely through iCloud keychain?"),
-                    primaryButton: .default(Text("Create and Sync").bold(), action: {
+                    message: Text("Would you like to synchronize your key securely through the iCloud Keychain?"),
+                    primaryButton: .default(Text("Create and Sync"), action: {
                         createSSH(withICloud: true)
                     }),
-                    secondaryButton: .default(Text("Create without Sync"), action: {
+                    secondaryButton: .destructive(Text("Create without Sync"), action: {
                         createSSH(withICloud: false)
                     })
                 )

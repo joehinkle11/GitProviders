@@ -13,6 +13,8 @@ struct SSHKeyDetailsView: View {
     let keychain: Keychain
     let appName: String
     @Binding var iCloudSync: Bool
+    @State var keyType: KeyType = .RSA
+    @State var keySize: KeySize = ._2048
     
     @State private var showPublicKeyAsSSH = true
     @State private var showPrivate = false
@@ -57,19 +59,35 @@ struct SSHKeyDetailsView: View {
                     }
                 }
             }
-            Section(header: HStack {
-                Image(systemName: "gear")
-                Text("Advanced")
-                Spacer()
-            }) {
-                if showAdvanced {
+            if showAdvanced {
+                Section(header: HStack {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                    Text("Regenerate Keys")
+                    Spacer()
+                }) {
                     Toggle(isOn: $iCloudSync, label: {
-                        Text("iCloud Sync \(Text("(only applies on next key regeneration)").font(.footnote))")
+                        Text("iCloud Sync")
                     })
-                    Button("Regenerate Keys") {
+                    Picker("Key Type", selection: $keyType) {
+                        ForEach(KeyType.allCases) { keyTypeOption in
+                            Text("\(keyTypeOption.rawValue)").tag(keyTypeOption)
+                        }
+                    }
+                    Picker("Key Size", selection: $keySize) {
+                        ForEach(KeySize.allCases) { keySizeOption in
+                            Text("\(keySizeOption.rawValue) bits").tag(keySizeOption)
+                        }
+                    }
+                    Button("Regenerate") {
                         modal = .RegenKeyConfirm
                     }
-                } else {
+                }
+            } else {
+                Section(header: HStack {
+                    Image(systemName: "gear")
+                    Text("Advanced")
+                    Spacer()
+                }) {
                     Button("Show Advanced") {
                         showAdvanced = true
                     }
@@ -81,7 +99,7 @@ struct SSHKeyDetailsView: View {
             case .RegenKeyConfirm:
                 return Alert(title: Text("Are you sure?"), message: Text("If you regenerating yours keys, you will lose your old keys."), primaryButton: .destructive(Text("Regenerate")) {
                     sshKey = nil
-                    if let newSSHKey: SSHKey = .generateNew(for: keychain, withICloudSync: iCloudSync) {
+                    if let newSSHKey: SSHKey = .generateNew(for: keychain, withICloudSync: iCloudSync, keySize: keySize, keyType: keyType) {
                         sshKey = newSSHKey
                     }
                 }, secondaryButton: .cancel())
