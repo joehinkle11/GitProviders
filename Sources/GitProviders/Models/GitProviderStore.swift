@@ -12,13 +12,13 @@ import KeychainAccess
 public final class GitProviderStore: ObservableObject {
     let keychain: Keychain
     
-    @Published var gitProviders: [GitProvider] = [.init(providerName: "GitHub", hasRepoListAccess: false, hasRepoContents: true)]
+    @Published var gitProviders: [GitProvider] = []
     @Published var sshKey: SSHKey? = nil
     
     func refresh() {
         // load ssh key from keychain
         self.sshKey = SSHKey.get(from: keychain)
-//        gitProviders = []
+        gitProviders = []
 //        // todo: load gitproviders in the given keychain
     }
     

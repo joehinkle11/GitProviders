@@ -35,19 +35,13 @@ public struct GitProvidersView: View {
 
 extension GitProvidersView {
     var dataNotice: Text {
-        (Text("\(appName) does NOT store any git provider credentials on its servers. Rather, all access tokens, ssh keys, and other sensitve information are stored \(Text("securely").bold()) in your iCloud keychain. Such keys are only brought into memory at point of consumption and are otherwise safely stored in the Secure Enclave. Furthermore, \(appName) does NOT sync any repository code keys onto its servers. See our privacy policy for more information.")).font(.footnote)
+        (Text("\(appName) does NOT store any git provider credentials on its servers. Rather, all access tokens, ssh keys, and other sensitve information are stored \(Text("securely").bold()) in your keychain and optionally synced through the iCloud keychain. Such keys are only brought into memory at point of consumption and are otherwise safely stored in the Secure Enclave. Furthermore, \(appName) does NOT sync any repository code keys onto its servers. See our privacy policy for more information.")).font(.footnote)
     }
     var connectedProvidersHeader: some View {
         HStack {
             Image(systemName: "wifi")
             Text("Connected Providers")
             Spacer()
-            NavigationLink(destination: AddGitProviderView()) {
-                HStack {
-                    Text("Add")
-                    Image(systemName: "plus.circle.fill").renderingMode(.original).scaleEffect(1.5)
-                }
-            }
         }
     }
     var sshHeader: some View {
@@ -70,12 +64,12 @@ extension GitProvidersView {
         createSSHKeyWasSuccess = gitProviderStore.sshKey != nil
         showAlert = .CreateSSHKeyResult
     }
+    var showBottomPart: Bool {
+        gitProviderStore.gitProviders.count > 0 || gitProviderStore.sshKey != nil
+    }
     var mainBody: some View {
         List {
-            Section(header: connectedProvidersHeader) {
-                if gitProviderStore.gitProviders.count == 0 {
-                    Text("No providers.")
-                }
+            Section(header: connectedProvidersHeader, footer: showBottomPart ? nil : dataNotice) {
                 ForEach(gitProviderStore.gitProviders) { gitProvider in
                     GitProviderCell(gitProvider: gitProvider)
                 }.onDelete {
@@ -84,18 +78,23 @@ extension GitProvidersView {
                         showAlert = .ShowRemoveConfirmation
                     }
                 }
+                NavigationLink(destination: AddGitProviderView()) {
+                    Text("Add New Provider").foregroundColor(.blue)
+                }
             }
-            Section(header: sshHeader, footer: dataNotice) {
-                if let sshKey = gitProviderStore.sshKey {
-                    NavigationLink("View SSH Key", destination: SSHKeyDetailsView(
-                        sshKey: sshKey,
-                        keychain: gitProviderStore.keychain,
-                        appName: appName,
-                        iCloudSync: $iCloudSync
-                    ))
-                } else {
-                    Button("Create an SSH Key") {
-                        showAlert = .CreateSSHKey
+            if showBottomPart {
+                Section(header: sshHeader, footer: dataNotice) {
+                    if let sshKey = gitProviderStore.sshKey {
+                        NavigationLink("View SSH Key", destination: SSHKeyDetailsView(
+                            sshKey: sshKey,
+                            keychain: gitProviderStore.keychain,
+                            appName: appName,
+                            iCloudSync: $iCloudSync
+                        ))
+                    } else {
+                        Button("Create an SSH Key") {
+                            showAlert = .CreateSSHKey
+                        }
                     }
                 }
             }

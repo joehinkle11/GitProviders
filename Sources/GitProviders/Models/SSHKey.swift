@@ -44,7 +44,7 @@ struct SSHKey {
             publicKeyKeychainName: defaultPublicKeyKeychainName,
             privateKeyKeychainName: defaultPrivateKeyKeychainName
         )
-        if sshKey.publicKeyData != nil && sshKey.privateKeyData != nil {
+        if sshKey.publicKeyData != nil {
             return sshKey
         }
         return nil
