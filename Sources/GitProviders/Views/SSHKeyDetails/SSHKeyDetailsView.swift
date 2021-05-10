@@ -10,6 +10,7 @@ import SwiftUI
 struct SSHKeyDetailsView: View {
     let sshKey: SSHKey
     
+    @State private var showPublicKeyAsSSH = true
     @State private var showPrivate = false
     
     var mainBody: some View {
@@ -19,10 +20,9 @@ struct SSHKeyDetailsView: View {
                 Text("Your SSH Public Key (id_rsa.pub)")
                 Spacer()
             }) {
-                if let publicKey = sshKey.publicKey?.base64EncodedString() {
+                if let publicKey = showPublicKeyAsSSH ? sshKey.publicKeyAsSSHFormat : sshKey.publicKeyAsPEMFormat {
                     CopiableCellView(copiableTest: publicKey)
                 }
-                
             }
             Section(header: HStack {
                 Image(systemName: "key.fill")
@@ -30,7 +30,7 @@ struct SSHKeyDetailsView: View {
                 Spacer()
             }) {
                 if showPrivate {
-                    if let privateKey = sshKey.privateKey?.base64EncodedString() {
+                    if let privateKey = sshKey.privateKeyAsPEMString {
                         CopiableCellView(copiableTest: privateKey)
                     }
                 } else {

@@ -9,19 +9,29 @@ import Foundation
 import Security
 import KeychainAccess
 
-// adapted from: https://stackoverflow.com/a/45931021/3902590
-
 struct SSHKey {
     let keychain: Keychain
     let publicKeyKeychainName: String
     let privateKeyKeychainName: String
     /// okay to retain in memory, it's a public key
-    var publicKey: Data? {
+    var publicKeyData: Data? {
         try? keychain.getData(publicKeyKeychainName)
     }
+    /// okay to retain in memory, it's a public key
+    var publicKeyAsPEMFormat: String? {
+        publicKeyData?.printAsPEMPublicKey()
+    }
+    /// okay to retain in memory, it's a public key
+    var publicKeyAsSSHFormat: String? {
+        try? publicKeyData?.publicPEMKeyToSSHFormat()
+    }
     /// do not retain in memory, this data is highly sensitive!
-    var privateKey: Data? {
+    var privateKeyData: Data? {
         try? keychain.getData(privateKeyKeychainName)
+    }
+    /// do not retain in memory, this data is highly sensitive!
+    var privateKeyAsPEMString: String? {
+        privateKeyData?.printAsPEMPrivateKey()
     }
     
     
@@ -34,7 +44,7 @@ struct SSHKey {
             publicKeyKeychainName: defaultPublicKeyKeychainName,
             privateKeyKeychainName: defaultPrivateKeyKeychainName
         )
-        if sshKey.publicKey != nil && sshKey.privateKey != nil {
+        if sshKey.publicKeyData != nil && sshKey.privateKeyData != nil {
             return sshKey
         }
         return nil
@@ -42,61 +52,41 @@ struct SSHKey {
     
     static func generateNew(for keychain: Keychain) -> SSHKey? {
         if let bundleId = Bundle.main.bundleIdentifier {
-            let publicKeyAttr: [NSObject: NSObject] = [
-                kSecAttrIsPermanent: true as NSObject,
-                kSecAttrApplicationTag: "\(bundleId).public".data(using: String.Encoding.utf8)! as NSObject,
-                kSecClass: kSecClassKey, // added this value
-                kSecReturnData: kCFBooleanTrue] // added this value
-            let privateKeyAttr: [NSObject: NSObject] = [
-                kSecAttrIsPermanent: true as NSObject,
-                kSecAttrApplicationTag: "\(bundleId).private".data(using: String.Encoding.utf8)! as NSObject,
-                kSecClass: kSecClassKey, // added this value
-                kSecReturnData: kCFBooleanTrue] // added this value
+            let publicKeyTag: String = "\(bundleId).publickey"
+            let privateKeyTag: String = "\(bundleId).privatekey"
+            let keyPair = generateKeyPair(publicKeyTag, privateTag: privateKeyTag, keySize: 2048)
             
-            var keyPairAttr = [NSObject: NSObject]()
-            keyPairAttr[kSecAttrKeyType] = kSecAttrKeyTypeRSA
-            keyPairAttr[kSecAttrKeySizeInBits] = 2048 as NSObject
-            keyPairAttr[kSecPublicKeyAttrs] = publicKeyAttr as NSObject
-            keyPairAttr[kSecPrivateKeyAttrs] = privateKeyAttr as NSObject
+            var pbError:Unmanaged<CFError>?
+            var prError:Unmanaged<CFError>?
             
-            var publicKey : SecKey?
-            var privateKey : SecKey?
-            
-            let statusCode = SecKeyGeneratePair(keyPairAttr as CFDictionary, &publicKey, &privateKey)
-            
-            if statusCode == noErr && publicKey != nil && privateKey != nil {
-                var resultPublicKey: AnyObject?
-                var resultPrivateKey: AnyObject?
-                let statusPublicKey = SecItemCopyMatching(publicKeyAttr as CFDictionary, &resultPublicKey)
-                let statusPrivateKey = SecItemCopyMatching(privateKeyAttr as CFDictionary, &resultPrivateKey)
-                
-                if statusPublicKey == noErr {
-                    if let publicKey = resultPublicKey as? Data {
-                        if statusPrivateKey == noErr {
-                            if let privateKey = resultPrivateKey as? Data {
-                                // store public key so that it's locked in the secure enclave until someone unlocks the device for the first time after a reboot
-                                do {
-                                    try keychain
-                                        .synchronizable(true)
-                                        .accessibility(.afterFirstUnlock)
-                                        .set(publicKey, key: defaultPublicKeyKeychainName)
-                                    // store private key so that it's locked in the secure enclave except when the device is in an unlocked state
-                                    try keychain
-                                        .synchronizable(true)
-                                        .accessibility(.whenUnlocked)
-                                        .set(privateKey, key: defaultPrivateKeyKeychainName)
-                                    return .init(
-                                        keychain: keychain,
-                                        publicKeyKeychainName: defaultPublicKeyKeychainName,
-                                        privateKeyKeychainName: defaultPrivateKeyKeychainName
-                                    )
-                                } catch {}
-                            }
-                        }
-                    }
-                }
+            guard let publicKey = keyPair?.publicKey,
+                  let pbData = SecKeyCopyExternalRepresentation(publicKey, &pbError) as Data? else {
+                return nil
             }
+            guard let privateKey = keyPair?.privateKey, let prData = SecKeyCopyExternalRepresentation(privateKey, &prError) as Data? else {
+                return nil
+            }
+            
+            do {
+                // store public key so that it's locked in the secure enclave until someone unlocks the device for the first time after a reboot
+                try keychain
+                    .synchronizable(true)
+                    .accessibility(.afterFirstUnlock)
+                    .set(pbData, key: defaultPublicKeyKeychainName)
+                // store private key so that it's locked in the secure enclave except when the device is in an unlocked state
+                try keychain
+                    .synchronizable(true)
+                    .accessibility(.whenUnlocked)
+                    .set(prData, key: defaultPrivateKeyKeychainName)
+                return .init(
+                    keychain: keychain,
+                    publicKeyKeychainName: defaultPublicKeyKeychainName,
+                    privateKeyKeychainName: defaultPrivateKeyKeychainName
+                )
+            } catch {}
         }
         return nil
     }
 }
+
+
