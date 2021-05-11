@@ -107,6 +107,8 @@ struct GitProvider: Identifiable {
             return self.allSSHPublicKeys().map { publicKeyData in
                 AccessMethodDetailCell(gitProviderStore: gitProviderStore, accessMethodData: SSHAccessMethodData(publicKeyData: publicKeyData), accessMethod: accessMethod)
             }
+        case .Password: return []
+        case .OAuth: return []
         }
     }
     

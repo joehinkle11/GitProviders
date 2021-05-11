@@ -97,7 +97,13 @@ struct GitProviderDetailsAccessMethodSectionView: View, Identifiable {
     @State private var showDeleteConfirmationAlert = false
     @State private var accessMethodDataToDisassociateI: Int?
     
-    var body: some View {
+    var atLeastOneSetupForThisDevice: Bool {
+        accessMethodDetailCells.filter({
+            $0.validOnThisDevice
+        }).count >= 1
+    }
+    
+    var sectionBody: some View {
         Section(header: HStack {
             accessMethod.icon.frame(maxWidth: 10)
             Text(accessMethod.listDescription)
@@ -111,25 +117,32 @@ struct GitProviderDetailsAccessMethodSectionView: View, Identifiable {
                     showDeleteConfirmationAlert = true
                 }
             }
-            if accessMethodDetailCells.filter({
-                $0.validOnThisDevice
-            }).count == 0 {
-                NavigationLink(accessMethod.setupMessage, destination: accessMethod.addView(for: gitProviderStore, preset: gitProvider.preset, customDetails: gitProvider.customDetails)).foregroundColor(.blue)
+            if !atLeastOneSetupForThisDevice {
+                if let setupMessage = accessMethod.setupMessage {
+                    NavigationLink(setupMessage, destination: accessMethod.addView(for: gitProviderStore, preset: gitProvider.preset, customDetails: gitProvider.customDetails)).foregroundColor(.blue)
+                }
             }
-        }.alert(isPresented: $showDeleteConfirmationAlert) {
-            if let accessMethodDataToDisassociateI = accessMethodDataToDisassociateI, accessMethodDataToDisassociateI < accessMethodDetailCells.count {
-                let accessMethodDataToDisassociate = accessMethodDetailCells[accessMethodDataToDisassociateI].accessMethodData
-                return Alert(
-                    title: Text("Are you sure?"),
-                    message: Text(accessMethod.removeMessage(accessMethodData: accessMethodDataToDisassociate, profileName: gitProvider.baseKeyName ?? "")),
-                    primaryButton: .destructive(Text("Delete"), action: {
-                        gitProvider.remove(accessMethodData: accessMethodDataToDisassociate)
-                        gitProviderStore.refresh()
-                    }),
-                    secondaryButton: .cancel()
-                )
-            } else {
-                return Alert(title: Text("Error"))
+        }
+    }
+    
+    var body: some View {
+        // only should the section if there is at least one setup for the device, OR there's a setup message
+        if atLeastOneSetupForThisDevice || accessMethod.setupMessage != nil {
+            sectionBody.alert(isPresented: $showDeleteConfirmationAlert) {
+                if let accessMethodDataToDisassociateI = accessMethodDataToDisassociateI, accessMethodDataToDisassociateI < accessMethodDetailCells.count {
+                    let accessMethodDataToDisassociate = accessMethodDetailCells[accessMethodDataToDisassociateI].accessMethodData
+                    return Alert(
+                        title: Text("Are you sure?"),
+                        message: Text(accessMethod.removeMessage(accessMethodData: accessMethodDataToDisassociate, profileName: gitProvider.baseKeyName ?? "")),
+                        primaryButton: .destructive(Text("Delete"), action: {
+                            gitProvider.remove(accessMethodData: accessMethodDataToDisassociate)
+                            gitProviderStore.refresh()
+                        }),
+                        secondaryButton: .cancel()
+                    )
+                } else {
+                    return Alert(title: Text("Error"))
+                }
             }
         }
     }

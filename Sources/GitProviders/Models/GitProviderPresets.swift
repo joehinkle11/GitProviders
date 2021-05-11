@@ -40,14 +40,53 @@ enum GitProviderPresets: String, CaseIterable, Identifiable {
         }
     }
     
+    var addAccessTokenLink: String? {
+        switch self {
+        case .GitHub:
+            return "https://github.com/settings/tokens/new"
+        case .BitBucket:
+            return "https://bitbucket.org/account/settings/app-passwords/new"
+        case .GitLab:
+            return "https://gitlab.com/-/profile/personal_access_tokens"
+        case .Custom:
+            return nil
+        }
+    }
+    
+    var addAccessTokenPagePermissionForRepoContents: [String]? {
+        switch self {
+        case .GitHub:
+            return ["repo"]
+        case .BitBucket:
+            return ["Repositories Read", "Repositories Write"]
+        case .GitLab:
+            return ["read_repository","write_repository"]
+        case .Custom:
+            return nil
+        }
+    }
+    
+    var addAccessTokenPagePermissionForRepoList: [String]? {
+        switch self {
+        case .GitHub:
+            return ["repo"]
+        case .BitBucket:
+            return ["Repositories Read"]
+        case .GitLab:
+            return ["read_api"]
+        case .Custom:
+            return nil
+        }
+    }
+    
     var supportedContentAccessMethods: [RepositoryAccessMethods] {
         switch self {
         case .GitHub:
             return [.AccessToken, .SSH]
         case .BitBucket:
-            return [.SSH]
+            return [.AccessToken, .SSH]
         case .GitLab:
-            return [.SSH]
+            return [.AccessToken, .SSH]
         case .Custom:
             return [.SSH]
         }

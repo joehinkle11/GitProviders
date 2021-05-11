@@ -7,11 +7,13 @@
 
 import SwiftUI
 
-enum RepositoryAccessMethods: Identifiable {
+enum RepositoryAccessMethods: String, Identifiable {
     var id: String { name }
     
     case AccessToken
     case SSH
+    case Password
+    case OAuth
     
     var icon: Image {
         switch self {
@@ -19,15 +21,23 @@ enum RepositoryAccessMethods: Identifiable {
             return Image(systemName: "circle.dashed")
         case .SSH:
             return Image(systemName: "key.fill")
+        case .Password:
+            return Image(systemName: "textformat.abc")
+        case .OAuth:
+            return Image(systemName: "lock.shield")
         }
     }
     
-    var setupMessage: String {
+    var setupMessage: String? {
         switch self {
         case .AccessToken:
             return "Add an access token"
         case .SSH:
             return "Setup SSH for this device"
+        case .Password:
+            return nil
+        case .OAuth:
+            return "Setup OAuth for this device"
         }
     }
     
@@ -37,19 +47,27 @@ enum RepositoryAccessMethods: Identifiable {
             return "Access Tokens"
         case .SSH:
             return "SSH Keys"
+        case .Password:
+            return name
+        case .OAuth:
+            return name
         }
     }
     
     func isValidOnThisDevice(gitProviderStore: GitProviderStore, accessMethodData: RepositoryAccessMethodData) -> Bool {
         switch self {
         case .AccessToken:
-            return true
+            fatalError("todo: check this device has this auth and that is isn't that we just know if it's existence")
         case .SSH:
             if let userSSHKey = gitProviderStore.sshKey,
                let cellPublicKeyData = (accessMethodData as? SSHAccessMethodData)?.publicKeyData {
                 return userSSHKey.publicKeyData == cellPublicKeyData
             }
             return false
+        case .Password:
+            fatalError("todo: check this device has this auth and that is isn't that we just know if it's existence")
+        case .OAuth:
+            fatalError("todo: check this device has this auth and that is isn't that we just know if it's existence")
         }
     }
     
@@ -59,15 +77,23 @@ enum RepositoryAccessMethods: Identifiable {
             fatalError()
         case .SSH:
             return "Are you sure what want to disassociate the public key \((try? (accessMethodData as? SSHAccessMethodData)?.publicKeyData.publicPEMKeyToSSHFormat()) ?? "") with profile \(profileName)?"
+        case .Password:
+            fatalError()
+        case .OAuth:
+            fatalError()
         }
     }
     
     func isValidMessage(isValid: Bool) -> String? {
         switch self {
         case .AccessToken:
-            return nil
+            fatalError()
         case .SSH:
             return "private key is \(isValid ? "" : "not ")on this device"
+        case .Password:
+            fatalError()
+        case .OAuth:
+            fatalError()
         }
     }
     
@@ -81,15 +107,19 @@ enum RepositoryAccessMethods: Identifiable {
             return AnyView(AddAccessTokenView(gitProviderStore: gitProviderStore, preset: preset, customDetails: customDetails))
         case .SSH:
             return AnyView(AddSSHView(gitProviderStore: gitProviderStore, preset: preset, customDetails: customDetails))
+        case .Password:
+            fatalError()
+        case .OAuth:
+            fatalError()
         }
     }
     
     var name: String {
         switch self {
-        case .AccessToken:
-            return "Access Token"
-        case .SSH:
-            return "SSH"
+        case .AccessToken: return "Access Token"
+        case .SSH: return rawValue
+        case .Password: return rawValue
+        case .OAuth: return rawValue
         }
     }
 }
