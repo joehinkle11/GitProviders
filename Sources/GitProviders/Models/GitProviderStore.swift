@@ -18,8 +18,31 @@ public final class GitProviderStore: ObservableObject {
     func refresh() {
         // load ssh key from keychain
         self.sshKey = SSHKey.get(from: keychain)
+        let publicSSHKey = sshKey?.publicKeyAsSSHFormat
+        
+        // load gitproviders in the given keychain
         gitProviders = []
-//        // todo: load gitproviders in the given keychain
+        for preset in GitProviderPresets.allCases {
+            switch preset {
+            case .Custom:
+                break
+            default:
+                let presetName = preset.rawValue
+                let presetPublicSSHKey = GitProvider.publicKey(for: presetName, in: keychain)
+                var hasRepoListAccess = false // todo
+                var hasRepoContents = false
+                if publicSSHKey != nil && publicSSHKey == presetPublicSSHKey {
+                    hasRepoContents = true
+                }
+                let provider = GitProvider(
+                    preset: preset,
+                    keychain: keychain,
+                    hasRepoListAccess: hasRepoListAccess,
+                    hasRepoContents: hasRepoContents
+                )
+                gitProviders.append(provider)
+            }
+        }
     }
     
     public init(with keychain: Keychain) {

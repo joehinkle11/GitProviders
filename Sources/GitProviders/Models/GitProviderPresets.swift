@@ -8,6 +8,7 @@
 enum GitProviderPresets: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
     
+    // these keys should not change, as the keychain will use these key to lookup their saved state
     case GitHub
     case BitBucket
     case GitLab
