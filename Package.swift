@@ -23,7 +23,10 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "GitProviders",
-            dependencies: ["KeychainAccess","SwiftGit2"]),
+            dependencies: ["KeychainAccess","GitClient"]),
+        .target(
+            name: "GitClient",
+            dependencies: ["SwiftGit2"]),
         .testTarget(
             name: "GitProvidersTests",
             dependencies: ["GitProviders"]),

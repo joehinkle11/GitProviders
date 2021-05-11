@@ -6,10 +6,14 @@
 //
 
 import SwiftUI
+import GitClient
 
 struct AddSSHView: View {
     @ObservedObject var gitProviderStore: GitProviderStore
     let preset: GitProviderPresets
+    
+    @State private var isTesting = false
+    @State private var testingResult: Bool? = nil
     
     func instructionBase(i: Int, text: String) -> some View {
         HStack {
@@ -51,8 +55,22 @@ struct AddSSHView: View {
         }
     }
     
-    func testConnection() {
-        gitProviderStore.moveBackToFirstPage()
+    func testConnection(sshKey: SSHKey) {
+        if let privateKey = sshKey.privateKeyAsPEMString, let domain = preset.domain {
+            isTesting = true
+            DispatchQueue.global(qos: .background).async {
+                let result = testSSH(privateKey: privateKey, forDomain: domain)
+                if result {
+                    // success, therefore mark this git provider as working with ssh
+                } else {
+                    // failed, therefore mark this git provider as NOT working with ssh
+                }
+                DispatchQueue.main.async {
+                    testingResult = result
+                    isTesting = false
+                }
+            }
+        }
     }
     
     var body: some View {
@@ -71,7 +89,24 @@ struct AddSSHView: View {
                     }
                     instruction(i: 3, text: "Login if needed")
                     instruction(i: 4, text: "Paste your public key on \(hostName)'s page and save", link: nil, copyableText: nil)
-                    instruction(i: 5, text: "Test connection", onClick: testConnection)
+                    if isTesting {
+                        HStack {
+                            ProgressView().padding(.trailing, 2)
+                            Text("Testing...this can take up to 10 seconds or more")
+                        }
+                    } else {
+                        instruction(i: 5, text: "Test connection") {
+                            testConnection(sshKey: sshKey)
+                        }
+                    }
+                    if let testingResult = testingResult {
+                        if testingResult {
+                            Text("Failed").foregroundColor(.red)
+                        } else {
+                            Text("Success").foregroundColor(.green)
+//                            Button("Back ")
+                        }
+                    }
                 }
             }
         }.listStyle(InsetGroupedListStyle())

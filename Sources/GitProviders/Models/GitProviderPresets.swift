@@ -13,6 +13,19 @@ enum GitProviderPresets: String, CaseIterable, Identifiable {
     case GitLab
     case Custom
     
+    var domain: String? {
+        switch self {
+        case .GitHub:
+            return rawValue + ".com"
+        case .BitBucket:
+            return rawValue + ".org"
+        case .GitLab:
+            return rawValue + ".com"
+        case .Custom:
+            return nil
+        }
+    }
+    
     var addSSHKeyLink: String? {
         switch self {
         case .GitHub:
