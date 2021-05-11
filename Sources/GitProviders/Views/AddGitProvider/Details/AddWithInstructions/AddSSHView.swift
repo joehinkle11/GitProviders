@@ -15,27 +15,8 @@ struct AddSSHView: View, InstructionView {
     let preset: GitProviderPresets
     let customDetails: CustomProviderDetails?
     
-    var gitProvider: GitProvider? {
-        gitProviderStore.gitProviders.first { provider in
-            switch preset {
-            case .Custom:
-                return provider.customDetails?.customName == customDetails?.customName
-            default:
-                return provider.baseKeyName == preset.rawValue
-            }
-        }
-    }
-    
     @State var isTesting = false
-    @State private var testingResult: Bool? = nil
-    
-    var hostName: String {
-        if preset == .Custom {
-            return customDetails?.customName ?? "Custom"
-        } else {
-            return preset.rawValue
-        }
-    }
+    @State var testingResult: Bool? = nil
     
     func testConnection(using authItem: SSHKey) {
         if let privateKey = authItem.privateKeyAsPEMString, let domain = preset.domain ?? customDetails?.domain {
@@ -57,7 +38,7 @@ struct AddSSHView: View, InstructionView {
         }
     }
     
-    var link: String? {
+    var setupSSHLink: String? {
         if let addSSHKeyLink = preset.addSSHKeyLink {
             return addSSHKeyLink
         } else if let domain = customDetails?.domain {
@@ -71,7 +52,7 @@ struct AddSSHView: View, InstructionView {
             CreateSSHIfNeededView(gitProviderStore: gitProviderStore) { sshKey in
                 instructionSection(footer: "Note: This will grant access read/write permissions to your repository contents") {
                     instruction(i: 1, text: "Copy your public key", copyableText: sshKey.publicKeyAsSSHFormat)
-                    if let addSSHKeyLink = link, let url = URL(string: addSSHKeyLink) {
+                    if let addSSHKeyLink = setupSSHLink, let url = URL(string: addSSHKeyLink) {
                         instruction(i: 2, text: "Goto \(hostName)", link: url)
                     } else {
                         instruction(i: 2, text: "Goto \(hostName)")
@@ -84,18 +65,7 @@ struct AddSSHView: View, InstructionView {
                         // we should the user the exact link to where they add their ssh key
                         instruction(i: 4, text: "Paste your public key on \(hostName)'s page and save", link: nil, copyableText: nil)
                     }
-                    testingStep(i: 5, with: sshKey)
-                    if let testingResult = testingResult {
-                        if testingResult {
-                            Text("Success").foregroundColor(.green).alert(isPresented: .constant(true), content: {
-                                Alert(title: Text("Success"), message: Text("SSH is successfully setup for \(hostName)!"), dismissButton: .default(Text("Okay"), action: {
-                                    gitProviderStore.moveBackToFirstPage()
-                                }))
-                            })
-                        } else {
-                            Text("Failed").foregroundColor(.red)
-                        }
-                    }
+                    testingStep(i: 5, with: sshKey, successMessage: "SSH is successfully setup for \(hostName)!")
                 }
             }
         }.listStyle(InsetGroupedListStyle())
