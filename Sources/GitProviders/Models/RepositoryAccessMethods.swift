@@ -13,12 +13,16 @@ enum RepositoryAccessMethods: Identifiable {
     case AccessToken
     case SSH
     
-    func addView(for gitProviderStore: GitProviderStore, preset: GitProviderPresets) -> AnyView {
+    func addView(
+        for gitProviderStore: GitProviderStore,
+        preset: GitProviderPresets,
+        customDetails: CustomProviderDetails?
+    ) -> AnyView {
         switch self {
         case .AccessToken:
             return AnyView(EmptyView()) // todo
         case .SSH:
-            return AnyView(AddSSHView(gitProviderStore: gitProviderStore, preset: preset))
+            return AnyView(AddSSHView(gitProviderStore: gitProviderStore, preset: preset, customDetails: customDetails))
         }
     }
     

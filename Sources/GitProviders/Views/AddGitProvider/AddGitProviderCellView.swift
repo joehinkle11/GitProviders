@@ -12,7 +12,18 @@ struct AddGitProviderCellView: View {
     @ObservedObject var gitProviderStore: GitProviderStore
     let preset: GitProviderPresets
     
+    @State var showModal = false
+    
     var body: some View {
-        NavigationLink(preset.rawValue, destination: AddGitProviderDetailsView(gitProviderStore: gitProviderStore, preset: preset))
+        switch preset {
+        case .Custom:
+            Button(preset.rawValue) {
+                showModal = true
+            }.sheet(isPresented: $showModal, content: {
+                AddCustomProvider(gitProviderStore: gitProviderStore, showThisModal: $showModal)
+            })
+        default:
+            NavigationLink(preset.rawValue, destination: AddGitProviderDetailsView(gitProviderStore: gitProviderStore, preset: preset, customDetails: nil))
+        }
     }
 }

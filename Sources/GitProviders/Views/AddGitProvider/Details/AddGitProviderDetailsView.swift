@@ -10,6 +10,7 @@ import SwiftUI
 struct AddGitProviderDetailsView: View {
     @ObservedObject var gitProviderStore: GitProviderStore
     let preset: GitProviderPresets
+    let customDetails: CustomProviderDetails?
     
     var mainBody: some View {
         List {
@@ -20,7 +21,7 @@ struct AddGitProviderDetailsView: View {
             }) {
                 let accessMethods = preset.supportedContentAccessMethods
                 ForEach(accessMethods) { accessMethod in
-                    NavigationLink(accessMethod.name, destination: accessMethod.addView(for: gitProviderStore, preset: preset).navigationTitle("Add \(accessMethod.name) for \(preset.rawValue)"))
+                    NavigationLink(accessMethod.name, destination: accessMethod.addView(for: gitProviderStore, preset: preset, customDetails: customDetails).navigationTitle("Add \(accessMethod.name) for \(preset.rawValue)"))
                 }
             }
             Section(header: HStack {

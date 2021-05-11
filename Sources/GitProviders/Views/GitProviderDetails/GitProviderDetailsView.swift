@@ -25,6 +25,6 @@ struct GitProviderDetailsView: View {
     }
     
     var body: some View {
-        mainBody.navigationTitle("\(gitProvider.providerName) Details")
+        mainBody.navigationTitle("\(gitProvider.baseKeyName ?? "") Details")
     }
 }

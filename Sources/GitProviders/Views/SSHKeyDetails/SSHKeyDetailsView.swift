@@ -9,6 +9,7 @@ import SwiftUI
 import KeychainAccess
 
 struct SSHKeyDetailsView: View {
+    @ObservedObject var gitProviderStore: GitProviderStore
     @State var sshKey: SSHKey? = nil
     let keychain: Keychain
     let appName: String
@@ -103,6 +104,7 @@ struct SSHKeyDetailsView: View {
                     sshKey = nil
                     if let newSSHKey: SSHKey = .generateNew(for: keychain, withICloudSync: iCloudSync, keySize: keySize, keyType: keyType) {
                         sshKey = newSSHKey
+                        gitProviderStore.refresh()
                     }
                 }, secondaryButton: .cancel())
             case .ShowPrivateConform:

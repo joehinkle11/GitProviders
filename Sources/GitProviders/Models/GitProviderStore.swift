@@ -15,30 +15,39 @@ public final class GitProviderStore: ObservableObject {
     @Published var gitProviders: [GitProvider] = []
     @Published var sshKey: SSHKey? = nil
     
+    /// just a set of all the custom provider names
+    let customProviderDataStore: SecureSetDataStore<CustomProviderDetails>
+    
+    private func getAllCustomProviders(currentSSHKeyOfUser: SSHKey?) -> [GitProvider] {
+        var providers: [GitProvider] = []
+        for providerDetails in customProviderDataStore.all() {
+            providers.append(GitProvider(
+                customDetails: providerDetails,
+                keychain: keychain,
+                currentSSHKeyOfUser: sshKey
+            ))
+        }
+        return providers
+    }
+    
     func refresh() {
         // load ssh key from keychain
         self.sshKey = SSHKey.get(from: keychain)
-        let publicSSHKey = sshKey?.publicKeyAsSSHFormat
         
         // load gitproviders in the given keychain
         gitProviders = []
         for preset in GitProviderPresets.allCases {
             switch preset {
             case .Custom:
-                break
-            default:
-                let presetName = preset.rawValue
-                let presetPublicSSHKey = GitProvider.publicKey(for: presetName, in: keychain)
-                var hasRepoListAccess = false // todo
-                var hasRepoContents = false
-                if publicSSHKey != nil && publicSSHKey == presetPublicSSHKey {
-                    hasRepoContents = true
+                let providers = getAllCustomProviders(currentSSHKeyOfUser: sshKey)
+                for provider in providers {
+                    gitProviders.append(provider)
                 }
+            default:
                 let provider = GitProvider(
                     preset: preset,
                     keychain: keychain,
-                    hasRepoListAccess: hasRepoListAccess,
-                    hasRepoContents: hasRepoContents
+                    currentSSHKeyOfUser: sshKey
                 )
                 gitProviders.append(provider)
             }
@@ -47,12 +56,23 @@ public final class GitProviderStore: ObservableObject {
     
     public init(with keychain: Keychain) {
         self.keychain = keychain
+        self.customProviderDataStore = .init(key: "all_custom_git_providers", syncs: true, keychain: keychain)
         refresh()
     }
     
     func remove(_ gitProviderToRemove: GitProvider) {
-        gitProviderToRemove.remove()
+        gitProviderToRemove.delete()
+        if let customDetails = gitProviderToRemove.customDetails {
+            customProviderDataStore.remove(value: customDetails)
+        }
         refresh()
+    }
+    
+    func addCustom(named name: String, withDomain domain: String) {
+        customProviderDataStore.add(value: CustomProviderDetails(
+            customName: name,
+            domain: domain
+        ))
     }
     
     

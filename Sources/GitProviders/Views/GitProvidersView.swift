@@ -35,7 +35,7 @@ public struct GitProvidersView: View {
             NavigationView {
                 mainBody
                     .navigationTitle("Git Providers")
-                    .navigationBarItems(trailing: gitProviderStore.gitProviders.count == 0 ? nil : EditButton())
+                    .navigationBarItems(trailing: activeOrCustomProviders.count == 0 ? nil : EditButton())
             }.navigationViewStyle(StackNavigationViewStyle())
         }
     }
@@ -66,17 +66,22 @@ extension GitProvidersView {
     }
 }
 extension GitProvidersView {
+    var activeOrCustomProviders: [GitProvider] {
+        gitProviderStore.gitProviders.filter { provider in
+            provider.isActive || provider.preset == .Custom
+        }
+    }
     var showBottomPart: Bool {
-        gitProviderStore.gitProviders.count > 0 || gitProviderStore.sshKey != nil
+        activeOrCustomProviders.count > 0 || gitProviderStore.sshKey != nil
     }
     var mainBody: some View {
         List {
             Section(header: connectedProvidersHeader, footer: showBottomPart ? nil : dataNotice) {
-                ForEach(gitProviderStore.gitProviders) { gitProvider in
+                ForEach(activeOrCustomProviders) { gitProvider in
                     GitProviderCell(gitProvider: gitProvider)
                 }.onDelete {
-                    if let first = $0.first, gitProviderStore.gitProviders.count > first {
-                        gitProviderToRemove = gitProviderStore.gitProviders[first]
+                    if let first = $0.first, activeOrCustomProviders.count > first {
+                        gitProviderToRemove = activeOrCustomProviders[first]
                         showDeleteConfirmationAlert = true
                     }
                 }
@@ -88,6 +93,7 @@ extension GitProvidersView {
                 Section(header: sshHeader, footer: dataNotice) {
                     CreateSSHIfNeededView(gitProviderStore: gitProviderStore) { sshKey in
                         NavigationLink("View SSH Key", destination: SSHKeyDetailsView(
+                            gitProviderStore: gitProviderStore,
                             sshKey: sshKey,
                             keychain: gitProviderStore.keychain,
                             appName: appName
@@ -99,7 +105,7 @@ extension GitProvidersView {
         .alert(isPresented: $showDeleteConfirmationAlert) {
             Alert(
                 title: Text("Are you sure?"),
-                message: Text("Are you sure what want to delete \(gitProviderToRemove?.providerName ?? "")?"),
+                message: Text("Are you sure what want to delete \(gitProviderToRemove?.baseKeyName ?? "")?"),
                 primaryButton: .destructive(Text("Delete"), action: {
                     if let gitProviderToRemove = gitProviderToRemove {
                         gitProviderStore.remove(gitProviderToRemove)
