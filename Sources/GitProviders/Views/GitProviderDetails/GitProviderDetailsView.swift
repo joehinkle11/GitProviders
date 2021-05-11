@@ -21,6 +21,15 @@ struct GitProviderDetailsView: View {
     
     var mainBody: some View {
         List {
+            if let domain = gitProvider.customDetails?.domain, let url = URL(string: "https://\(domain)") {
+                Section(header: HStack {
+                    Image(systemName: "link")
+                    Text("Custom Provider Host Address")
+                    Spacer()
+                }) {
+                    Link(url.absoluteString, destination: url)
+                }
+            }
             Section(header: HStack {
                 Image(systemName: "info.circle")
                 Text("Access Rights Information")
@@ -38,6 +47,7 @@ struct GitProviderDetailsView: View {
                     Spacer()
                     Text("\(gitProvider.baseKeyName ?? "") \(gitProvider.hasRepoContents ? "has" : "does not have") the ability to see the contents of repositories").font(.footnote).foregroundColor(.gray)
                 }
+                NavigationLink("Grant New Access Right", destination: AddGitProviderDetailsView(gitProviderStore: gitProviderStore, preset: gitProvider.preset, customDetails: gitProvider.customDetails)).foregroundColor(.blue)
             }
             GitProviderDetailsSSHSectionView(gitProviderStore: gitProviderStore, gitProvider: gitProvider)
         }.listStyle(InsetGroupedListStyle())

@@ -51,7 +51,7 @@ struct AddCustomProvider: View {
                     showThisModal = false
                     gitProviderStore.addCustom(named: cleanedCustomName, withDomain: cleanedCustomDomain)
                     gitProviderStore.refresh()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                         gitProviderStore.moveBackToFirstPage()
                     }
                 }.disabled(missingDetails).opacity(missingDetails ? 0.5 : 1)
