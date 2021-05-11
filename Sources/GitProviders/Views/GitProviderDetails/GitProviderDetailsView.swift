@@ -12,6 +12,7 @@ struct GitProviderDetailsView: View {
     
     @ObservedObject var gitProviderStore: GitProviderStore
     let gitProvider: GitProvider
+    let appName: String
     
     @State private var deleteAlert = false
     
@@ -21,10 +22,10 @@ struct GitProviderDetailsView: View {
     
     var mainBody: some View {
         List {
-            if let domain = gitProvider.customDetails?.domain, let url = URL(string: "https://\(domain)") {
+            if let domain = gitProvider.preset.domain ?? gitProvider.customDetails?.domain, let url = URL(string: "https://\(domain)") {
                 Section(header: HStack {
                     Image(systemName: "link")
-                    Text("Custom Provider Host Address")
+                    Text("Host Address")
                     Spacer()
                 }) {
                     Link(url.absoluteString, destination: url)
@@ -39,17 +40,23 @@ struct GitProviderDetailsView: View {
                     AccessImageView(hasAccess: gitProvider.hasRepoListAccess, sfSymbolBase: "text.badge")
                     Text("Repo List")
                     Spacer()
-                    Text("\(gitProvider.baseKeyName ?? "") \(gitProvider.hasRepoListAccess ? "has" : "does not have") the ability to see which repositories exist on the server").font(.footnote).foregroundColor(.gray)
+                    Text("\(appName) \(gitProvider.hasRepoListAccess ? "can" : "cannot") see which repositories exist on your \(gitProvider.baseKeyName ?? "")").font(.footnote).foregroundColor(.gray)
                 }
                 HStack {
                     AccessImageView(hasAccess: gitProvider.hasRepoContents, sfSymbolBase: "externaldrive.badge")
                     Text("Repo Contents")
                     Spacer()
-                    Text("\(gitProvider.baseKeyName ?? "") \(gitProvider.hasRepoContents ? "has" : "does not have") the ability to see the contents of repositories").font(.footnote).foregroundColor(.gray)
+                    Text("\(appName) \(gitProvider.hasRepoContents ? "can" : "cannot") see the contents of repositories hosted on your \(gitProvider.baseKeyName ?? "")").font(.footnote).foregroundColor(.gray)
                 }
                 NavigationLink("Grant New Access Right", destination: AddGitProviderDetailsView(gitProviderStore: gitProviderStore, preset: gitProvider.preset, customDetails: gitProvider.customDetails)).foregroundColor(.blue)
             }
-            GitProviderDetailsSSHSectionView(gitProviderStore: gitProviderStore, gitProvider: gitProvider)
+            ForEach(gitProvider.preset.supportedContentAccessMethods) { accessMethod in
+                GitProviderDetailsAccessMethodSectionView(
+                    gitProviderStore: gitProviderStore,
+                    gitProvider: gitProvider,
+                    accessMethod: accessMethod
+                )
+            }
         }.listStyle(InsetGroupedListStyle())
     }
     
@@ -61,50 +68,52 @@ struct GitProviderDetailsView: View {
 }
 
 
-struct GitProviderDetailsSSHSectionView: View {
+struct GitProviderDetailsAccessMethodSectionView: View {
     @ObservedObject var gitProviderStore: GitProviderStore
     let gitProvider: GitProvider
+    let accessMethod: RepositoryAccessMethods
     
-    var publicKeyCells: [SSHPublicKeyCell] {
-        gitProvider.allSSHPublicKeys().map({
-            SSHPublicKeyCell(userSSHKey: gitProviderStore.sshKey, cellPublicKeyData: $0)
-        })
+    var accessMethodDetailCells: [AccessMethodDetailCell] {
+        gitProvider.createAccessMethodDetailCells(for: accessMethod, in: gitProviderStore)
     }
     
     @State private var showDeleteConfirmationAlert = false
-    @State private var publicKeyToDisassociate: Data?
+    @State private var accessMethodDataToDisassociateI: Int?
     
     var body: some View {
         Section(header: HStack {
-            Image(systemName: "key.fill")
-            Text("SSH Keys")
+            accessMethod.icon.frame(maxWidth: 10)
+            Text(accessMethod.listDescription)
             Spacer()
         }) {
-            ForEach(publicKeyCells) { publicKeyCell in
+            ForEach(accessMethodDetailCells) { publicKeyCell in
                 publicKeyCell
             }.onDelete {
-                if let first = $0.first, publicKeyCells.count > first {
-                    publicKeyToDisassociate = publicKeyCells[first].cellPublicKeyData
+                if let first = $0.first, accessMethodDetailCells.count > first {
+                    accessMethodDataToDisassociateI = first
                     showDeleteConfirmationAlert = true
                 }
             }
-            if publicKeyCells.filter({
-                $0.privateKeyIsOnDevice
+            if accessMethodDetailCells.filter({
+                $0.validOnThisDevice
             }).count == 0 {
-                NavigationLink("Setup SSH for this device", destination: AddSSHView(gitProviderStore: gitProviderStore, preset: gitProvider.preset, customDetails: gitProvider.customDetails))
+                NavigationLink(accessMethod.setupMessage, destination: accessMethod.addView(for: gitProviderStore, preset: gitProvider.preset, customDetails: gitProvider.customDetails))
             }
         }.alert(isPresented: $showDeleteConfirmationAlert) {
-            Alert(
-                title: Text("Are you sure?"),
-                message: Text("Are you sure what want to disassociate the public key \((try? publicKeyToDisassociate?.publicPEMKeyToSSHFormat()) ?? "") with profile \(gitProvider.baseKeyName ?? "")?"),
-                primaryButton: .destructive(Text("Delete"), action: {
-                    if let publicKeyToDisassociate = publicKeyToDisassociate {
-                        gitProvider.remove(sshPublicKey: publicKeyToDisassociate)
+            if let accessMethodDataToDisassociateI = accessMethodDataToDisassociateI, accessMethodDataToDisassociateI < accessMethodDetailCells.count {
+                let accessMethodDataToDisassociate = accessMethodDetailCells[accessMethodDataToDisassociateI].accessMethodData
+                return Alert(
+                    title: Text("Are you sure?"),
+                    message: Text(accessMethod.removeMessage(accessMethodData: accessMethodDataToDisassociate, profileName: gitProvider.baseKeyName ?? "")),
+                    primaryButton: .destructive(Text("Delete"), action: {
+                        gitProvider.remove(accessMethodData: accessMethodDataToDisassociate)
                         gitProviderStore.refresh()
-                    }
-                }),
-                secondaryButton: .cancel()
-            )
+                    }),
+                    secondaryButton: .cancel()
+                )
+            } else {
+                return Alert(title: Text("Error"))
+            }
         }
     }
 }

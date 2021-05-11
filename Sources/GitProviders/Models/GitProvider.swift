@@ -96,6 +96,20 @@ struct GitProvider: Identifiable {
         sshKeyDataStore.removeAll()
     }
     
+    func createAccessMethodDetailCells(
+        for accessMethod: RepositoryAccessMethods,
+        in gitProviderStore: GitProviderStore
+    ) -> [AccessMethodDetailCell] {
+        switch accessMethod {
+        case .AccessToken:
+            return []
+        case .SSH:
+            return self.allSSHPublicKeys().map { publicKeyData in
+                AccessMethodDetailCell(gitProviderStore: gitProviderStore, accessMethodData: SSHAccessMethodData(publicKeyData: publicKeyData), accessMethod: accessMethod)
+            }
+        }
+    }
+    
     /// only stores public key
     func add(sshKey: SSHKey) {
         if let publicKey = sshKey.publicKeyData {
@@ -107,8 +121,10 @@ struct GitProvider: Identifiable {
             sshKeyDataStore.remove(value: publicKey)
         }
     }
-    func remove(sshPublicKey: Data) {
-        sshKeyDataStore.remove(value: sshPublicKey)
+    func remove(accessMethodData: RepositoryAccessMethodData) {
+        if let sshAccessMethodData = accessMethodData as? SSHAccessMethodData {
+            sshKeyDataStore.remove(value: sshAccessMethodData.publicKeyData)
+        }
     }
     func allSSHPublicKeys() -> Set<Data> {
         sshKeyDataStore.all()

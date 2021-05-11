@@ -83,7 +83,7 @@ extension GitProvidersView {
         List {
             Section(header: connectedProvidersHeader, footer: showBottomPart ? nil : dataNotice) {
                 ForEach(activeOrCustomProviders) { gitProvider in
-                    GitProviderCell(gitProvider: gitProvider, gitProviderStore: gitProviderStore)
+                    GitProviderCell(gitProvider: gitProvider, gitProviderStore: gitProviderStore, appName: appName)
                 }.onDelete {
                     if let first = $0.first, activeOrCustomProviders.count > first {
                         gitProviderToRemove = activeOrCustomProviders[first]

@@ -10,10 +10,11 @@ import SwiftUI
 struct GitProviderCell: View {
     let gitProvider: GitProvider
     @ObservedObject var gitProviderStore: GitProviderStore
+    let appName: String
     
     var body: some View {
         if let baseKeyName = gitProvider.baseKeyName {
-            NavigationLink(destination: GitProviderDetailsView(gitProviderStore: gitProviderStore, gitProvider: gitProvider)) {
+            NavigationLink(destination: GitProviderDetailsView(gitProviderStore: gitProviderStore, gitProvider: gitProvider, appName: appName)) {
                 HStack {
                     if gitProvider.preset == .Custom {
                         Text("Custom - \(baseKeyName)")
