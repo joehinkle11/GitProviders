@@ -17,7 +17,22 @@ struct GitProviderDetailsView: View {
     @State private var deleteAlert = false
     
     var isEditable: Bool {
-        editMode?.wrappedValue == .active || gitProvider.allSSHPublicKeys().count > 0
+        editMode?.wrappedValue == .active || accessMethodSections.contains(where: { section in
+            section.accessMethodDetailCells.count > 0
+        })
+    }
+    
+    var accessMethodSections: [GitProviderDetailsAccessMethodSectionView] {
+        var sections: [GitProviderDetailsAccessMethodSectionView] = []
+        for accessMethod in gitProvider.preset.supportedContentAccessMethods {
+            sections.append(GitProviderDetailsAccessMethodSectionView(
+                gitProviderStore: gitProviderStore,
+                gitProvider: gitProvider,
+                accessMethod: accessMethod,
+                accessMethodDetailCells: gitProvider.createAccessMethodDetailCells(for: accessMethod, in: gitProviderStore)
+            ))
+        }
+        return sections
     }
     
     var mainBody: some View {
@@ -50,12 +65,8 @@ struct GitProviderDetailsView: View {
                 }
                 NavigationLink("Grant New Access Right", destination: AddGitProviderDetailsView(gitProviderStore: gitProviderStore, preset: gitProvider.preset, customDetails: gitProvider.customDetails)).foregroundColor(.blue)
             }
-            ForEach(gitProvider.preset.supportedContentAccessMethods) { accessMethod in
-                GitProviderDetailsAccessMethodSectionView(
-                    gitProviderStore: gitProviderStore,
-                    gitProvider: gitProvider,
-                    accessMethod: accessMethod
-                )
+            ForEach(accessMethodSections) { section in
+                section
             }
         }.listStyle(InsetGroupedListStyle())
     }
@@ -68,14 +79,14 @@ struct GitProviderDetailsView: View {
 }
 
 
-struct GitProviderDetailsAccessMethodSectionView: View {
+struct GitProviderDetailsAccessMethodSectionView: View, Identifiable {
+    var id: Int {
+        accessMethod.hashValue
+    }
     @ObservedObject var gitProviderStore: GitProviderStore
     let gitProvider: GitProvider
     let accessMethod: RepositoryAccessMethods
-    
-    var accessMethodDetailCells: [AccessMethodDetailCell] {
-        gitProvider.createAccessMethodDetailCells(for: accessMethod, in: gitProviderStore)
-    }
+    let accessMethodDetailCells: [AccessMethodDetailCell]
     
     @State private var showDeleteConfirmationAlert = false
     @State private var accessMethodDataToDisassociateI: Int?
