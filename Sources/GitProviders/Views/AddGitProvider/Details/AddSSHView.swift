@@ -17,7 +17,7 @@ struct AddSSHView: View {
         gitProviderStore.gitProviders.first { provider in
             switch preset {
             case .Custom:
-                return provider.baseKeyName == customDetails?.customName
+                return provider.customDetails?.customName == customDetails?.customName
             default:
                 return provider.baseKeyName == preset.rawValue
             }
@@ -68,7 +68,7 @@ struct AddSSHView: View {
     }
     
     func testConnection(sshKey: SSHKey) {
-        if let privateKey = sshKey.privateKeyAsPEMString, let domain = preset.domain {
+        if let privateKey = sshKey.privateKeyAsPEMString, let domain = preset.domain ?? customDetails?.domain {
             isTesting = true
             DispatchQueue.global(qos: .background).async {
                 let result = testSSH(privateKey: privateKey, forDomain: domain)
@@ -142,5 +142,6 @@ struct AddSSHView: View {
                 }
             }
         }.listStyle(InsetGroupedListStyle())
+        .navigationTitle("Add SSH for \(preset.rawValue)")
     }
 }

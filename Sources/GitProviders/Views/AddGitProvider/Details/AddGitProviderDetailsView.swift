@@ -21,7 +21,7 @@ struct AddGitProviderDetailsView: View {
             }) {
                 let accessMethods = preset.supportedContentAccessMethods
                 ForEach(accessMethods) { accessMethod in
-                    NavigationLink(accessMethod.name, destination: accessMethod.addView(for: gitProviderStore, preset: preset, customDetails: customDetails).navigationTitle("Add \(accessMethod.name) for \(preset.rawValue)"))
+                    NavigationLink(accessMethod.name, destination: accessMethod.addView(for: gitProviderStore, preset: preset, customDetails: customDetails))
                 }
             }
             Section(header: HStack {

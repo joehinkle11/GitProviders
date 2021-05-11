@@ -17,11 +17,11 @@ enum GitProviderPresets: String, CaseIterable, Identifiable {
     var domain: String? {
         switch self {
         case .GitHub:
-            return rawValue + ".com"
+            return rawValue.lowercased() + ".com"
         case .BitBucket:
-            return rawValue + ".org"
+            return rawValue.lowercased() + ".org"
         case .GitLab:
-            return rawValue + ".com"
+            return rawValue.lowercased() + ".com"
         case .Custom:
             return nil
         }

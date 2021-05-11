@@ -53,7 +53,7 @@ struct GitProvider: Identifiable {
         self.customDetails = customDetails
         self.keychain = keychain
         self.currentSSHKeyOfUser = currentSSHKeyOfUser
-        self.sshKeyDataStore = .init(key: customDetails.customName + _public_ssh_keys, syncs: true, keychain: keychain)
+        self.sshKeyDataStore = .init(key: "custom_" + customDetails.customName + _public_ssh_keys, syncs: true, keychain: keychain)
     }
     
     var baseKeyName: String? {
@@ -64,6 +64,16 @@ struct GitProvider: Identifiable {
             return preset.rawValue
         }
     }
+    
+    var userDescription: String {
+        switch preset {
+        case .Custom:
+            return "custom profile \(customDetails?.customName ?? "")"
+        default:
+            return preset.rawValue
+        }
+    }
+    
     /// This provider can see what repos the user has
     var hasRepoListAccess: Bool {
         false
@@ -96,5 +106,11 @@ struct GitProvider: Identifiable {
         if let publicKey = sshKey.publicKeyData {
             sshKeyDataStore.remove(value: publicKey)
         }
+    }
+    func remove(sshPublicKey: Data) {
+        sshKeyDataStore.remove(value: sshPublicKey)
+    }
+    func allSSHPublicKeys() -> Set<Data> {
+        sshKeyDataStore.all()
     }
 }

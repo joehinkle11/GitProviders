@@ -8,6 +8,7 @@
 import SwiftUI
 
 public struct GitProvidersView: View {
+    @Environment(\.editMode) var editMode
     
     @ObservedObject var gitProviderStore: GitProviderStore
     let appName: String
@@ -15,6 +16,10 @@ public struct GitProvidersView: View {
     @State private var showDeleteConfirmationAlert = false
     
     @State private var gitProviderToRemove: GitProvider? = nil
+    
+    var isEditable: Bool {
+        editMode?.wrappedValue == .active || activeOrCustomProviders.count > 0
+    }
     
     public init(
         gitProviderStore: GitProviderStore,
@@ -35,7 +40,7 @@ public struct GitProvidersView: View {
             NavigationView {
                 mainBody
                     .navigationTitle("Git Providers")
-                    .navigationBarItems(trailing: activeOrCustomProviders.count == 0 ? nil : EditButton())
+                    .navigationBarItems(trailing: isEditable ? EditButton().font(nil) : nil)
             }.navigationViewStyle(StackNavigationViewStyle())
         }
     }
@@ -78,7 +83,7 @@ extension GitProvidersView {
         List {
             Section(header: connectedProvidersHeader, footer: showBottomPart ? nil : dataNotice) {
                 ForEach(activeOrCustomProviders) { gitProvider in
-                    GitProviderCell(gitProvider: gitProvider)
+                    GitProviderCell(gitProvider: gitProvider, gitProviderStore: gitProviderStore)
                 }.onDelete {
                     if let first = $0.first, activeOrCustomProviders.count > first {
                         gitProviderToRemove = activeOrCustomProviders[first]
@@ -105,7 +110,7 @@ extension GitProvidersView {
         .alert(isPresented: $showDeleteConfirmationAlert) {
             Alert(
                 title: Text("Are you sure?"),
-                message: Text("Are you sure what want to delete \(gitProviderToRemove?.baseKeyName ?? "")?"),
+                message: Text("Are you sure what want to delete \(gitProviderToRemove?.userDescription ?? "")?"),
                 primaryButton: .destructive(Text("Delete"), action: {
                     if let gitProviderToRemove = gitProviderToRemove {
                         gitProviderStore.remove(gitProviderToRemove)
