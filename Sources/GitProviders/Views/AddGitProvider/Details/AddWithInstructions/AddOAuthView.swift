@@ -1,5 +1,5 @@
 //
-//  AddAccessTokenView.swift
+//  AddOAuthView.swift
 //  
 //
 //  Created by Joseph Hinkle on 5/11/21.
@@ -8,8 +8,8 @@
 import SwiftUI
 import GitClient
 
-struct AddAccessTokenView: View, InstructionView {
-    typealias T = AccessToken
+struct AddOAuthView: View, InstructionView {
+    typealias T = OAuthToken
     
     @ObservedObject var gitProviderStore: GitProviderStore
     let preset: GitProviderPresets
@@ -19,7 +19,7 @@ struct AddAccessTokenView: View, InstructionView {
     @State var isTesting = false
     @State var testingResult: Bool? = nil
     
-    func testConnection(using authItem: AccessToken) {
+    func testConnection(using authItem: OAuthToken) {
 //        if let privateKey = authItem.privateKeyAsPEMString, let domain = preset.domain ?? customDetails?.domain {
 //            isTesting = true
 //            DispatchQueue.global(qos: .background).async {
@@ -39,7 +39,7 @@ struct AddAccessTokenView: View, InstructionView {
 //        }
     }
     
-    func forceAdd(authItem: AccessToken) {
+    func forceAdd(authItem: OAuthToken) {
 //        gitProvider?.add(sshKey: authItem)
     }
     
@@ -52,30 +52,9 @@ struct AddAccessTokenView: View, InstructionView {
         return nil
     }
     
-    var badPracticeMessage: String {
-        var name = ""
-        var evenText = ""
-        switch preset {
-        case .Custom:
-            evenText = ", even for custom hosting providers"
-        default:
-            name = preset.rawValue + " "
-        }
-        return "It is bad practice to use your real \(name)password\(evenText). Furthermore, many hosting providers are no longer allowing users to clone repositories using their real passwords, so it may not be possible to setup password authentication for this provider. Consider setting up with another authentication method like SSH or with personal access tokens."
-    }
-    
     var body: some View {
         List {
-            if isPassword {
-                Section(header: HStack {
-                    Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.orange)
-                    Text("Warning")
-                    Spacer()
-                }) {
-                    Text(badPracticeMessage)
-                }
-            }
-            instructionSection(footer: "Note: This will grant access read\(isPassword ? "/write" : " or read/write") permissions to all\(isPassword ? "" : " or some") of your repository contents on \(hostName)") {
+            instructionSection(footer: "Note: This will grant access read/write permissions to some or all of your repository contents") {
 //                instruction(i: 1, text: "Copy your public key", copyableText: sshKey.publicKeyAsSSHFormat)
 //                if let addSSHKeyLink = setupSSHLink, let url = URL(string: addSSHKeyLink) {
 //                    instruction(i: 2, text: "Goto \(hostName)", link: url)
@@ -93,6 +72,6 @@ struct AddAccessTokenView: View, InstructionView {
 //                testingStep(i: 5, with: sshKey, successMessage: "SSH is successfully setup for \(hostName)!")
             }
         }.listStyle(InsetGroupedListStyle())
-        .navigationTitle("Add \(isPassword ? "Password Authentication" : "Access Token") for \(hostName)")
+        .navigationTitle("Add OAuth Token for \(hostName)")
     }
 }

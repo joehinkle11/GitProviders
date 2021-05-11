@@ -12,7 +12,7 @@ enum RepositoryAccessMethods: String, Identifiable {
     
     case AccessToken
     case SSH
-    case Password
+    case Password // treated as an access token, but has a seperate case to create a distinction in the UI
     case OAuth
     
     var icon: Image {
@@ -108,9 +108,9 @@ enum RepositoryAccessMethods: String, Identifiable {
         case .SSH:
             return AnyView(AddSSHView(gitProviderStore: gitProviderStore, preset: preset, customDetails: customDetails))
         case .Password:
-            fatalError()
+            return AnyView(AddAccessTokenView(gitProviderStore: gitProviderStore, preset: preset, customDetails: customDetails, isPassword: true))
         case .OAuth:
-            fatalError()
+            return AnyView(AddOAuthView(gitProviderStore: gitProviderStore, preset: preset, customDetails: customDetails))
         }
     }
     

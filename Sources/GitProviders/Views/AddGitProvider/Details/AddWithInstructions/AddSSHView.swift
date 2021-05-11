@@ -73,6 +73,6 @@ struct AddSSHView: View, InstructionView {
                 }
             }
         }.listStyle(InsetGroupedListStyle())
-        .navigationTitle("Add SSH for \(preset.rawValue)")
+        .navigationTitle("Add SSH for \(hostName)")
     }
 }

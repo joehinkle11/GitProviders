@@ -82,13 +82,15 @@ enum GitProviderPresets: String, CaseIterable, Identifiable {
     var supportedContentAccessMethods: [RepositoryAccessMethods] {
         switch self {
         case .GitHub:
-            return [.AccessToken, .SSH]
+            return [.OAuth, .AccessToken, .SSH]
         case .BitBucket:
-            return [.AccessToken, .SSH]
+//            return [.OAuth, .AccessToken, .SSH, .Password]
+            return [.AccessToken, .SSH, .Password]
         case .GitLab:
-            return [.AccessToken, .SSH]
+//            return [.OAuth, .AccessToken, .SSH, .Password]
+            return [.AccessToken, .SSH, .Password]
         case .Custom:
-            return [.SSH]
+            return [.SSH, .AccessToken, .Password]
         }
     }
     var supportedRepoListAccessMethods: [RepositoryListAccessMethods] {
