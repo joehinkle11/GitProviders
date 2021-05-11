@@ -18,7 +18,12 @@ public struct GitProvidersView: View {
     @State private var gitProviderToRemove: GitProvider? = nil
     
     var isEditable: Bool {
-        editMode?.wrappedValue == .active || activeOrCustomProviders.count > 0
+        if activeOrCustomProviders.count == 0 && editMode?.wrappedValue == .active {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                editMode?.wrappedValue = .inactive
+            }
+        }
+        return editMode?.wrappedValue == .active || activeOrCustomProviders.count > 0
     }
     
     public init(

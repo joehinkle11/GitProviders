@@ -8,7 +8,9 @@
 import SwiftUI
 import GitClient
 
-struct AddSSHView: View {
+struct AddSSHView: View, InstructionView {
+    typealias T = SSHKey
+    
     @ObservedObject var gitProviderStore: GitProviderStore
     let preset: GitProviderPresets
     let customDetails: CustomProviderDetails?
@@ -24,40 +26,8 @@ struct AddSSHView: View {
         }
     }
     
-    @State private var isTesting = false
+    @State var isTesting = false
     @State private var testingResult: Bool? = nil
-    
-    func instructionBase(i: Int, text: String) -> some View {
-        HStack {
-            Image(systemName: "\(i).circle")
-            Text(text)
-        }
-    }
-    
-    @ViewBuilder
-    func instruction(i: Int, text: String, link url: URL? = nil, copyableText: String? = nil, onClick: (() -> Void)? = nil) -> some View {
-        if let url = url {
-            Link(destination: url) {
-                HStack {
-                    instructionBase(i: i, text: text)
-                    Spacer()
-                    Text(url.absoluteString).font(.footnote).foregroundColor(.gray)
-                }
-            }
-        } else if let onClick = onClick {
-            Button(action: onClick) {
-                instructionBase(i: i, text: text)
-            }
-
-        } else {
-            instructionBase(i: i, text: text)
-        }
-        if let copyableText = copyableText {
-            HStack {
-                CopiableCellView(copiableText: copyableText).font(.footnote)
-            }
-        }
-    }
     
     var hostName: String {
         if preset == .Custom {
@@ -67,17 +37,17 @@ struct AddSSHView: View {
         }
     }
     
-    func testConnection(sshKey: SSHKey) {
-        if let privateKey = sshKey.privateKeyAsPEMString, let domain = preset.domain ?? customDetails?.domain {
+    func testConnection(using authItem: SSHKey) {
+        if let privateKey = authItem.privateKeyAsPEMString, let domain = preset.domain ?? customDetails?.domain {
             isTesting = true
             DispatchQueue.global(qos: .background).async {
                 let result = testSSH(privateKey: privateKey, forDomain: domain)
                 if result {
                     // success, therefore mark this git provider as working with ssh
-                    gitProvider?.add(sshKey: sshKey)
+                    gitProvider?.add(sshKey: authItem)
                 } else {
                     // failed, therefore mark this git provider as NOT working with ssh
-                    gitProvider?.remove(sshKey: sshKey)
+                    gitProvider?.remove(sshKey: authItem)
                 }
                 DispatchQueue.main.async {
                     testingResult = result
@@ -99,11 +69,7 @@ struct AddSSHView: View {
     var body: some View {
         List {
             CreateSSHIfNeededView(gitProviderStore: gitProviderStore) { sshKey in
-                Section(header: HStack {
-                    Image(systemName: "list.number")
-                    Text("Setup Instructions")
-                    Spacer()
-                }, footer: Text("Note: This will grant access read/write permissions to your repository contents")) {
+                instructionSection(footer: "Note: This will grant access read/write permissions to your repository contents") {
                     instruction(i: 1, text: "Copy your public key", copyableText: sshKey.publicKeyAsSSHFormat)
                     if let addSSHKeyLink = link, let url = URL(string: addSSHKeyLink) {
                         instruction(i: 2, text: "Goto \(hostName)", link: url)
@@ -118,16 +84,7 @@ struct AddSSHView: View {
                         // we should the user the exact link to where they add their ssh key
                         instruction(i: 4, text: "Paste your public key on \(hostName)'s page and save", link: nil, copyableText: nil)
                     }
-                    if isTesting {
-                        HStack {
-                            ProgressView().padding(.trailing, 2)
-                            Text("Testing...this can take up to 10 seconds or more")
-                        }
-                    } else {
-                        instruction(i: 5, text: "Test connection") {
-                            testConnection(sshKey: sshKey)
-                        }
-                    }
+                    testingStep(i: 5, with: sshKey)
                     if let testingResult = testingResult {
                         if testingResult {
                             Text("Success").foregroundColor(.green).alert(isPresented: .constant(true), content: {

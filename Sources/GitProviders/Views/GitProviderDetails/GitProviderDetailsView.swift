@@ -17,9 +17,15 @@ struct GitProviderDetailsView: View {
     @State private var deleteAlert = false
     
     var isEditable: Bool {
-        editMode?.wrappedValue == .active || accessMethodSections.contains(where: { section in
+        let hasEditableCells = accessMethodSections.contains(where: { section in
             section.accessMethodDetailCells.count > 0
         })
+        if !hasEditableCells && editMode?.wrappedValue == .active {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                editMode?.wrappedValue = .inactive
+            }
+        }
+        return editMode?.wrappedValue == .active || hasEditableCells
     }
     
     var accessMethodSections: [GitProviderDetailsAccessMethodSectionView] {
