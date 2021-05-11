@@ -78,7 +78,7 @@ enum RepositoryAccessMethods: Identifiable {
     ) -> AnyView {
         switch self {
         case .AccessToken:
-            return AnyView(EmptyView()) // todo
+            return AnyView(AddAccessTokenView(gitProviderStore: gitProviderStore, preset: preset, customDetails: customDetails))
         case .SSH:
             return AnyView(AddSSHView(gitProviderStore: gitProviderStore, preset: preset, customDetails: customDetails))
         }

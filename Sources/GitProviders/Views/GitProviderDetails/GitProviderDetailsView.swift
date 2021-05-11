@@ -114,7 +114,7 @@ struct GitProviderDetailsAccessMethodSectionView: View, Identifiable {
             if accessMethodDetailCells.filter({
                 $0.validOnThisDevice
             }).count == 0 {
-                NavigationLink(accessMethod.setupMessage, destination: accessMethod.addView(for: gitProviderStore, preset: gitProvider.preset, customDetails: gitProvider.customDetails))
+                NavigationLink(accessMethod.setupMessage, destination: accessMethod.addView(for: gitProviderStore, preset: gitProvider.preset, customDetails: gitProvider.customDetails)).foregroundColor(.blue)
             }
         }.alert(isPresented: $showDeleteConfirmationAlert) {
             if let accessMethodDataToDisassociateI = accessMethodDataToDisassociateI, accessMethodDataToDisassociateI < accessMethodDetailCells.count {

@@ -15,6 +15,7 @@ protocol InstructionView: View {
     var preset: GitProviderPresets { get }
     var customDetails: CustomProviderDetails? { get }
     var gitProviderStore: GitProviderStore { get }
+    func forceAdd(authItem: T)
 }
 
 extension InstructionView {
@@ -100,7 +101,14 @@ extension InstructionView {
                     }))
                 })
             } else {
-                Text("Failed").foregroundColor(.red)
+                HStack {
+                    Text("Failed").foregroundColor(.red)
+                    Spacer()
+                    Button("Force Add") {
+                        forceAdd(authItem: authItem)
+                        gitProviderStore.moveBackToFirstPage()
+                    }.foregroundColor(.orange).font(.footnote)
+                }
             }
         }
     }

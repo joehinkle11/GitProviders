@@ -38,6 +38,10 @@ struct AddSSHView: View, InstructionView {
         }
     }
     
+    func forceAdd(authItem: SSHKey) {
+        gitProvider?.add(sshKey: authItem)
+    }
+    
     var setupSSHLink: String? {
         if let addSSHKeyLink = preset.addSSHKeyLink {
             return addSSHKeyLink
