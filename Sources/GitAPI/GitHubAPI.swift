@@ -19,8 +19,8 @@ final class GitHubAPI: GitAPI {
             if let response = response {
                 let scopeStrings = response.headers.readStringList(from: "x-oauth-scopes")
                 var scopes: [PermScope] = []
-                if scopeStrings.contains("repo") {
-                    scopes.append(.repoList)
+                for scope in scopeStrings {
+                    scopes.append(.repoList(raw: "repo"))
                 }
                 callback(scopes, nil)
             } else {

@@ -60,7 +60,13 @@ final class GitAPITests: XCTestCase {
             let expectation = XCTestExpectation()
             gitAPI.fetchGrantedScopes { (scopes: [PermScope]?, error: Error?) in
                 if let scopes = scopes {
-                    XCTAssertTrue(scopes.contains(.repoList))
+                    XCTAssertTrue(scopes.contains(where: { scope in
+                        if case .repoList = scope {
+                            return true
+                        } else {
+                            return false
+                        }
+                    }))
                     expectation.fulfill()
                 } else {
                     XCTFail()
