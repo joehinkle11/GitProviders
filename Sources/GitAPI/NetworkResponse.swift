@@ -8,6 +8,6 @@
 import Foundation
 
 struct NetworkResponse {
-    let headers: [String]
+    let headers: [AnyHashable: Any]
     let body: Data
 }

@@ -20,7 +20,7 @@ protocol GitAPI {
 }
 
 extension GitAPI {
-    func get(_ path: String) -> some Publisher {
+    func get(_ path: String, callback: @escaping (NetworkResponse?, Error?) -> Void) {
         let url = baseUrl.appendingPathComponent(path)
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -30,12 +30,15 @@ extension GitAPI {
 //        } catch {
 //            return
 //        }
-        return URLSession.shared.dataTaskPublisher(for: request).map { output -> HTTPURLResponse? in
-            if let response = output.response as? HTTPURLResponse {
-                return response
-            }
-            return nil
-        }.replaceError(with: nil).subscribe(on: gitAPIProcessingQueue)
+        URLSession.shared.dataTaskPublisher(for: request).map { output -> HTTPURLResponse? in
+            return output.response as? HTTPURLResponse
+        }.replaceError(with: nil).subscribe(on: gitAPIProcessingQueue).sink { output in
+//            if let output = output {
+//                callback(NetworkResponse(headers: output.allHeaderFields, body: output.body), nil)
+//            } else {
+//                callback(nil, NSError())
+//            }
+        }
     }
 }
 

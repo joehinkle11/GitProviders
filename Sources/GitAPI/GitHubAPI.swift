@@ -14,9 +14,8 @@ final class GitHubAPI: GitAPI {
     private init() {}
     
     func fetchGrantedScopes(callback: @escaping (_ grantedScopes: [String]?, _ error: Error?) -> Void) {
-//        self.get("").sink { out in
-//            out!.hea
-//        }
-
+        self.get("") { response, error in
+            print("")
+        }
     }
 }

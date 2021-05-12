@@ -2,14 +2,23 @@ import XCTest
 @testable import GitAPI
 
 final class GitAPITests: XCTestCase {
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
-        XCTAssertEqual(FakeCreds.shared.get(.GitHubUsername), "joehinkle11@gmail.com")
+    func testEachAPI(testBlock: (GitAPI) -> Void) {
+        testBlock(GitHubAPI.shared)
+//        testBlock(BitBucketAPI.shared)
+//        testBlock(GitLabAPI.shared)
+    }
+    
+    
+    func testScopes() {
+        testEachAPI { gitAPI in
+            let expectation = XCTestExpectation()
+            gitAPI.fetchGrantedScopes { (scopes: [String]?, error: Error?) in
+                XCTAssertEqual(FakeCreds.shared.get(.GitHubUsername), "joehinkle11")
+                expectation.fulfill()
+            }
+            wait(for: [expectation], timeout: 10)
+        }
     }
 
-    static var allTests = [
-        ("testExample", testExample),
-    ]
+    static var allTests: [(String, (GitAPITests) -> () -> ())] = []
 }

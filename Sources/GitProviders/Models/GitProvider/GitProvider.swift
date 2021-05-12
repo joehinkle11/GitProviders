@@ -38,11 +38,11 @@ struct GitProvider: Identifiable {
     
     init(preset: GitProviderPresets, keychain: Keychain, currentSSHKeyOfUser: SSHKey?) {
         self.preset = preset
+        #if DEBUG
         guard preset != .Custom else {
-            #if DEBUG
             fatalError() // shouldn't happen
-            #endif
         }
+        #endif
         self.customDetails = nil
         self.keychain = keychain
         self.currentSSHKeyOfUser = currentSSHKeyOfUser
