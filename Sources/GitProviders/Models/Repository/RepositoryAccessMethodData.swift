@@ -13,7 +13,7 @@ protocol RepositoryAccessMethodData {
 
 struct SSHAccessMethodData: RepositoryAccessMethodData {
     var hash: Int {
-        publicKeyData.hashValue
+        return publicKeyData.hashValue
     }
     
     let publicKeyData: Data

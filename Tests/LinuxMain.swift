@@ -1,7 +1,7 @@
 import XCTest
 
-import GitProvidersTests
+import GitAPITests
 
 var tests = [XCTestCaseEntry]()
-tests += GitProvidersTests.allTests()
+tests += GitAPITests.allTests()
 XCTMain(tests)

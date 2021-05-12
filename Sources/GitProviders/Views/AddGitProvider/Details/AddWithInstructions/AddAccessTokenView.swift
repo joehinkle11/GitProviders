@@ -27,18 +27,18 @@ struct AddAccessTokenView: View, InstructionView {
             let domain = "https://github.com/joehinkle11/LiveAppWebServer"
             isTesting = true
             DispatchQueue.global(qos: .background).async {
-                let result = testUsernamePassword(username: authItem.username, password: authItem.passOrAccessToken, forDomain: domain)
-                if result {
-                    // success, therefore mark this git provider as working with ssh
-//                    gitProvider?.add(sshKey: authItem)
-                } else {
-                    // failed, therefore mark this git provider as NOT working with ssh
-//                    gitProvider?.remove(sshKey: authItem)
-                }
-                DispatchQueue.main.async {
-                    testingResult = result
-                    isTesting = false
-                }
+//                let result = testUsernamePassword(username: authItem.username, password: authItem.passOrAccessToken, forDomain: domain)
+//                if result {
+//                    // success, therefore mark this git provider as working with ssh
+////                    gitProvider?.add(sshKey: authItem)
+//                } else {
+//                    // failed, therefore mark this git provider as NOT working with ssh
+////                    gitProvider?.remove(sshKey: authItem)
+//                }
+//                DispatchQueue.main.async {
+//                    testingResult = result
+//                    isTesting = false
+//                }
             }
         }
     }

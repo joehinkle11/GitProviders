@@ -1,12 +1,12 @@
 import XCTest
-@testable import GitProviders
+@testable import GitAPI
 
-final class GitProvidersTests: XCTestCase {
+final class GitAPITests: XCTestCase {
     func testExample() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
-        XCTAssertEqual(GitProviders().text, "Hello, World!")
+        XCTAssertEqual("GitProviders().text", "Hello, World!")
     }
 
     static var allTests = [
