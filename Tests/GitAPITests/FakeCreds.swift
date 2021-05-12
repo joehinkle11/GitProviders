@@ -13,10 +13,6 @@ final class FakeCreds {
     func get(_ item: StringItem) -> String {
         try! String(contentsOf: Bundle.module.resourceURL!.appendingPathComponent("FakeCreds").appendingPathComponent(item.rawValue + ".txt")).trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    
-    func get(_ item: DataItem) -> Data {
-        fatalError()    
-    }
     private init() {}
     static let shared = FakeCreds()
 }
@@ -26,9 +22,11 @@ extension FakeCreds {
         case GitHubUsername
         case BitBucketUsername
         case GitLabUsername
-    }
-    enum DataItem: String {
-        case SSHPublicKey
-        case SSHPrivateKey
+        case GitHubAccessTokenWithoutRights
+        case GitHubAccessTokenWithRights
+        case BitBucketAccessTokenWithoutRights
+        case BitBucketAccessTokenWithRights
+        case GitLabAccessTokenWithoutRights
+        case GitLabAccessTokenWithRights
     }
 }

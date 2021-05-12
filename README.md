@@ -18,7 +18,6 @@ struct ContentView: View {
 }
 ```
 
+## Running Tests
 
-
-** Still under development, talk to Joe Hinkle if you have any questions or suggestions ** 
-
+Extract `FakeCreds.zip` and dump it at `Tests/GitAPITests/FakeCreds` and fill out your credentials you'd like to test.  
