@@ -11,7 +11,7 @@ import Foundation
 
 final class FakeCreds {
     func get(_ item: StringItem) -> String {
-        fatalError()    
+        try! String(contentsOf: Bundle.module.resourceURL!.appendingPathComponent("FakeCreds").appendingPathComponent(item.rawValue + ".txt")).trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
     func get(_ item: DataItem) -> Data {
@@ -23,12 +23,12 @@ final class FakeCreds {
 
 extension FakeCreds {
     enum StringItem: String {
-        case gitHubUsername
-        case bitBucketUsername
-        case gitLabUsername
+        case GitHubUsername
+        case BitBucketUsername
+        case GitLabUsername
     }
     enum DataItem: String {
-        case sshPublicKey
-        case sshPrivateKey
+        case SSHPublicKey
+        case SSHPrivateKey
     }
 }

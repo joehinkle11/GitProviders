@@ -32,6 +32,8 @@ let package = Package(
             dependencies: []),
         .testTarget(
             name: "GitAPITests",
-            dependencies: ["GitAPI"]),
+            dependencies: ["GitAPI"],
+            resources: [.copy("FakeCreds")]
+        ),
     ]
 )
