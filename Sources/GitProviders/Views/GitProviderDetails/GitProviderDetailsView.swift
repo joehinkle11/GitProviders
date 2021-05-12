@@ -35,7 +35,11 @@ struct GitProviderDetailsView: View {
                 gitProviderStore: gitProviderStore,
                 gitProvider: gitProvider,
                 accessMethod: accessMethod,
-                accessMethodDetailCells: gitProvider.createAccessMethodDetailCells(for: accessMethod, in: gitProviderStore)
+                accessMethodDetailCells: gitProvider.createAccessMethodDetailCells(
+                    for: accessMethod,
+                    gitProvider: gitProvider,
+                    in: gitProviderStore
+                )
             ))
         }
         return sections

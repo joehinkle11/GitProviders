@@ -8,7 +8,7 @@
 import Foundation
 import KeychainAccess
 
-struct AccessToken {
+struct AccessToken: Cred {
     let keychain: Keychain
     let accessTokenKeychainName: String
     

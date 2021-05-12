@@ -98,6 +98,7 @@ struct GitProvider: Identifiable {
     
     func createAccessMethodDetailCells(
         for accessMethod: RepositoryAccessMethods,
+        gitProvider: GitProvider,
         in gitProviderStore: GitProviderStore
     ) -> [AccessMethodDetailCell] {
         switch accessMethod {
@@ -105,7 +106,12 @@ struct GitProvider: Identifiable {
             return []
         case .SSH:
             return self.allSSHPublicKeys().map { publicKeyData in
-                AccessMethodDetailCell(gitProviderStore: gitProviderStore, accessMethodData: SSHAccessMethodData(publicKeyData: publicKeyData), accessMethod: accessMethod)
+                AccessMethodDetailCell(
+                    gitProviderStore: gitProviderStore,
+                    accessMethodData: SSHAccessMethodData(publicKeyData: publicKeyData),
+                    accessMethod: accessMethod,
+                    gitProvider: gitProvider
+                )
             }
         case .Password: return []
         case .OAuth: return []

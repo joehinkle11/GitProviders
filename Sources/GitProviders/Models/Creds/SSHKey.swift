@@ -9,7 +9,7 @@ import Foundation
 import Security
 import KeychainAccess
 
-struct SSHKey {
+struct SSHKey: Cred {
     let keychain: Keychain
     let publicKeyKeychainName: String
     let privateKeyKeychainName: String

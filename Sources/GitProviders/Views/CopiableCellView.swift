@@ -9,11 +9,11 @@ import SwiftUI
 
 struct CopiableCellView: View {
     let copiableText: String
+    var addRightOfButton: AnyView? = nil
     
     @State private var copied = false
     
-    var body: some View {
-        Text(copiableText)
+    var copyButton: some View {
         Button {
             UIPasteboard.general.string = copiableText
             copied = true
@@ -24,6 +24,18 @@ struct CopiableCellView: View {
             Label(copied ? "Copied" : "Copy", systemImage: copied ? "checkmark" : "doc.on.doc.fill")
                 .font(nil)
                 .frame(width: 100)
+        }
+    }
+    
+    var body: some View {
+        Text(copiableText)
+        if let addRightOfButton = addRightOfButton {
+            HStack {
+                copyButton
+                addRightOfButton
+            }
+        } else {
+            copyButton
         }
     }
 }

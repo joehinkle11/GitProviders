@@ -54,16 +54,18 @@ enum RepositoryAccessMethods: String, Identifiable {
         }
     }
     
-    func isValidOnThisDevice(gitProviderStore: GitProviderStore, accessMethodData: RepositoryAccessMethodData) -> Bool {
+    func getOnDeviceCred(gitProviderStore: GitProviderStore, accessMethodData: RepositoryAccessMethodData) -> Cred? {
         switch self {
         case .AccessToken:
             fatalError("todo: check this device has this auth and that is isn't that we just know if it's existence")
         case .SSH:
             if let userSSHKey = gitProviderStore.sshKey,
                let cellPublicKeyData = (accessMethodData as? SSHAccessMethodData)?.publicKeyData {
-                return userSSHKey.publicKeyData == cellPublicKeyData
+                if userSSHKey.publicKeyData == cellPublicKeyData {
+                    return userSSHKey
+                }
             }
-            return false
+            return nil
         case .Password:
             fatalError("todo: check this device has this auth and that is isn't that we just know if it's existence")
         case .OAuth:

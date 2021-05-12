@@ -107,7 +107,7 @@ extension InstructionView {
                     Button("Force Add") {
                         forceAdd(authItem: authItem)
                         gitProviderStore.moveBackToFirstPage()
-                    }.foregroundColor(.orange).font(.footnote)
+                    }.foregroundColor(.orange).font(.footnote).buttonStyle(BorderlessButtonStyle())
                 }
             }
         }
