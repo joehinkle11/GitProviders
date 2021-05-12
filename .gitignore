@@ -3,5 +3,4 @@
 /Packages
 /*.xcodeproj
 xcuserdata/
-FakeCreds/*.*
-FakeCreds/*
+Tests/GitAPITests/FakeCreds/*
