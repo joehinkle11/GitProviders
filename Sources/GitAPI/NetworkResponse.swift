@@ -8,6 +8,6 @@
 import Foundation
 
 struct NetworkResponse {
-    let headers: [AnyHashable: Any]
+    let headers: NSDictionary
     let body: Data
 }

@@ -60,35 +60,39 @@ struct AccessMethodDetailCell: View, Identifiable {
     
     @ViewBuilder
     var testButton: some View {
-        if let onDeviceCred = onDeviceCred {
+        HStack {
             if isTesting {
                 HStack {
                     ProgressView().padding(.trailing, 2)
                     Text("Testing...this can take up to 10 seconds or more")
                 }.padding(.leading)
             } else {
-                Divider()
-                Button {
-                    isTesting = true
-                    testConnection(cred: onDeviceCred)
-                } label: {
-                    Label("Test", systemImage: "wifi")
-                        .font(nil)
-                        .frame(width: 100)
-                }
-                if let testingResult = testingResult {
-                    if testingResult {
-                        Text("Success").foregroundColor(.green)
-                    } else {
-                        Text("Failed").foregroundColor(.red)
+                if let onDeviceCred = onDeviceCred {
+                    Divider()
+                    Button {
+                        isTesting = true
+                        testConnection(cred: onDeviceCred)
+                    } label: {
+                        Label("Test", systemImage: "wifi")
+                            .font(nil)
+                            .frame(width: 100)
+                    }
+                    if let testingResult = testingResult {
+                        if testingResult {
+                            Text("Success").foregroundColor(.green)
+                        } else {
+                            Text("Failed").foregroundColor(.red)
+                        }
+                    }
+                    if hasFailedTest && onDeviceCred is SSHKey {
+                        Divider().padding(.trailing)
+                        Label("Fix", systemImage: "hammer")
+                            .background(NavigationLink("", destination: AddSSHView(gitProviderStore: gitProviderStore, preset: gitProvider.preset, customDetails: gitProvider.customDetails)))
+                            .foregroundColor(.blue)
                     }
                 }
-            }
-            if hasFailedTest && onDeviceCred is SSHKey {
-                Divider().padding(.trailing)
-                Label("Fix", systemImage: "hammer")
-                    .background(NavigationLink("", destination: AddSSHView(gitProviderStore: gitProviderStore, preset: gitProvider.preset, customDetails: gitProvider.customDetails)))
-                    .foregroundColor(.blue)
+                Spacer()
+                message
             }
         }
     }
@@ -98,11 +102,7 @@ struct AccessMethodDetailCell: View, Identifiable {
             if let data = accessMethodData as? SSHAccessMethodData {
                 let publicKey = (try? data.publicKeyData.publicPEMKeyToSSHFormat()) ?? ""
                 if tapped {
-                    CopiableCellView(copiableText: publicKey, addRightOfButton: AnyView(HStack {
-                        testButton
-                        Spacer()
-                        message
-                    })).buttonStyle(BorderlessButtonStyle())
+                    CopiableCellView(copiableText: publicKey, addRightOfButton: AnyView(testButton)).buttonStyle(BorderlessButtonStyle())
                 } else {
                     Button(action: {
                         tapped = true
