@@ -44,25 +44,6 @@ struct SSHKeyDetailsView: View {
                 }
             }
             if showAdvanced {
-                if let sshKey = sshKey {
-                    Section(header: HStack {
-                        Image(systemName: "key.fill")
-                        Text("Your SSH Private Key (id_rsa)")
-                        Spacer()
-                    }) {
-                        if showPrivate {
-                            if let privateKey = sshKey.privateKeyAsPEMString {
-                                CopiableCellView(copiableText: privateKey)
-                            }
-                        } else {
-                            Button("Show Private Key (not recommended)") {
-                                modal = .ShowPrivateConform
-                            }
-                        }
-                    }
-                }
-            }
-            if showAdvanced {
                 Section(header: HStack {
                     Image(systemName: "arrow.triangle.2.circlepath")
                     Text("Regenerate Keys")
@@ -83,6 +64,23 @@ struct SSHKeyDetailsView: View {
                     }
                     Button("Regenerate") {
                         modal = .RegenKeyConfirm
+                    }
+                }
+                if let sshKey = sshKey {
+                    Section(header: HStack {
+                        Image(systemName: "key.fill")
+                        Text("Your SSH Private Key (id_rsa)")
+                        Spacer()
+                    }) {
+                        if showPrivate {
+                            if let privateKey = sshKey.privateKeyAsPEMString {
+                                CopiableCellView(copiableText: privateKey)
+                            }
+                        } else {
+                            Button("Show Private Key (not recommended)") {
+                                modal = .ShowPrivateConform
+                            }
+                        }
                     }
                 }
             } else {

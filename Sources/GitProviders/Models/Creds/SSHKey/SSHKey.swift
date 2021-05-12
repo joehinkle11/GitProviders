@@ -81,21 +81,28 @@ struct SSHKey: Cred {
             
             do {
                 // store public key so that it's locked in the secure enclave until someone unlocks the device for the first time after a reboot
-                try keychain
+                let pbDataKeychain = keychain
                     .synchronizable(withICloudSync)
                     .accessibility(.afterFirstUnlock)
-                    .set(pbData, key: defaultPublicKeyKeychainName)
+                try pbDataKeychain.remove(defaultPublicKeyKeychainName)
+                try pbDataKeychain.set(pbData, key: defaultPublicKeyKeychainName)
+                
                 // store private key so that it's locked in the secure enclave except when the device is in an unlocked state
-                try keychain
+                let prDataKeychain = keychain
                     .synchronizable(withICloudSync)
                     .accessibility(.whenUnlocked)
-                    .set(prData, key: defaultPrivateKeyKeychainName)
+                try prDataKeychain.remove(defaultPrivateKeyKeychainName)
+                try prDataKeychain.set(prData, key: defaultPrivateKeyKeychainName)
                 return .init(
                     keychain: keychain,
                     publicKeyKeychainName: defaultPublicKeyKeychainName,
                     privateKeyKeychainName: defaultPrivateKeyKeychainName
                 )
-            } catch {}
+            } catch {
+                #if DEBUG
+                print(error)
+                #endif
+            }
         }
         return nil
     }
