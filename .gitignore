@@ -3,4 +3,5 @@
 /Packages
 /*.xcodeproj
 xcuserdata/
-FakeCreds/
+FakeCreds/*.*
+FakeCreds/*
