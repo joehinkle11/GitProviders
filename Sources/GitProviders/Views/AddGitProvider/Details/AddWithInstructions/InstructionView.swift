@@ -47,7 +47,16 @@ extension InstructionView {
     }
     
     @ViewBuilder
-    func instruction(i: Int, text: String, link url: URL? = nil, copyableText: String? = nil, onClick: (() -> Void)? = nil) -> some View {
+    func instruction(
+        i: Int,
+        text: String,
+        link url: URL? = nil,
+        copyableText: String? = nil,
+        onClick: (() -> Void)? = nil,
+        shouldPasteButton: Bool = false,
+        input: (title: String, binding: Binding<String>)? = nil,
+        secureInput: (title: String, binding: Binding<String>)? = nil
+    ) -> some View {
         if let url = url {
             Link(destination: url) {
                 HStack {
@@ -60,9 +69,20 @@ extension InstructionView {
             Button(action: onClick) {
                 instructionBase(i: i, text: text)
             }
-
         } else {
             instructionBase(i: i, text: text)
+        }
+        if let input = input {
+            HStack {
+                TextField(input.title, text: input.binding).keyboardType(.asciiCapable)
+                PasteButton(into: input.binding)
+            }
+        }
+        if let secureInput = secureInput {
+            HStack {
+                SecureField(secureInput.title, text: secureInput.binding)
+                PasteButton(into: secureInput.binding)
+            }
         }
         if let copyableText = copyableText {
             HStack {
