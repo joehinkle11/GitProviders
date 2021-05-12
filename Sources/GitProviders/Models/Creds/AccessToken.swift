@@ -17,3 +17,5 @@ struct AccessToken: Cred {
         try? keychain.getData(accessTokenKeychainName)
     }
 }
+
+typealias PasswordCred = AccessToken

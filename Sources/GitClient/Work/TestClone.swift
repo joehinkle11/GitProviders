@@ -1,5 +1,5 @@
 //
-//  TestSSH.swift
+//  TestClone.swift
 //  
 //
 //  Created by Joseph Hinkle on 5/10/21.
@@ -15,12 +15,12 @@ public func testSSH(privateKey: String, forDomain domain: String) -> Bool {
     return test(urlToTest: urlToTest, cred: cred)
 }
 
-/// returns: success
-public func testUsernamePassword(username: String, password: String, forDomain domain: String) -> Bool {
-    let urlToTest = URL(string: "https://\(domain)/\(username)/.git")! // todo: change to dedicated url
-    let cred = Credentials.plaintext(username: username, password: password)
-    return test(urlToTest: urlToTest, cred: cred)
-}
+///// returns: success
+//public func testUsernamePassword(username: String, password: String, forDomain domain: String) -> Bool {
+////    let urlToTest =
+//    let cred = Credentials.plaintext(username: username, password: password)
+//    return test(urlToTest: urlToTest, cred: cred)
+//}
 
 /// returns: success
 func test(urlToTest: URL, cred: Credentials) -> Bool {

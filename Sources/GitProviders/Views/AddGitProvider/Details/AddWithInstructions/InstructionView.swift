@@ -74,7 +74,7 @@ extension InstructionView {
         }
         if let input = input {
             HStack {
-                TextField(input.title, text: input.binding).keyboardType(.asciiCapable)
+                TextField(input.title, text: input.binding).keyboardType(.asciiCapable).disableAutocorrection(true)
                 PasteButton(into: input.binding)
             }
         }

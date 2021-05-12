@@ -9,7 +9,7 @@ import SwiftUI
 import GitClient
 
 struct AddAccessTokenView: View, InstructionView {
-    typealias T = AccessToken
+    typealias T = (username: String, passOrAccessToken: String)
     
     @ObservedObject var gitProviderStore: GitProviderStore
     let preset: GitProviderPresets
@@ -22,27 +22,28 @@ struct AddAccessTokenView: View, InstructionView {
     @State private var username = ""
     @State private var passwordOrAccessToken = ""
     
-    func testConnection(using authItem: AccessToken) {
-//        if let privateKey = authItem.privateKeyAsPEMString, let domain = preset.domain ?? customDetails?.domain {
-//            isTesting = true
-//            DispatchQueue.global(qos: .background).async {
-//                let result = testSSH(privateKey: privateKey, forDomain: domain)
-//                if result {
-//                    // success, therefore mark this git provider as working with ssh
+    func testConnection(using authItem: (username: String, passOrAccessToken: String)) {
+        if let domain = preset.domain ?? customDetails?.domain {
+            let domain = "https://github.com/joehinkle11/LiveAppWebServer"
+            isTesting = true
+            DispatchQueue.global(qos: .background).async {
+                let result = testUsernamePassword(username: authItem.username, password: authItem.passOrAccessToken, forDomain: domain)
+                if result {
+                    // success, therefore mark this git provider as working with ssh
 //                    gitProvider?.add(sshKey: authItem)
-//                } else {
-//                    // failed, therefore mark this git provider as NOT working with ssh
+                } else {
+                    // failed, therefore mark this git provider as NOT working with ssh
 //                    gitProvider?.remove(sshKey: authItem)
-//                }
-//                DispatchQueue.main.async {
-//                    testingResult = result
-//                    isTesting = false
-//                }
-//            }
-//        }
+                }
+                DispatchQueue.main.async {
+                    testingResult = result
+                    isTesting = false
+                }
+            }
+        }
     }
     
-    func forceAdd(authItem: AccessToken) {
+    func forceAdd(authItem: (username: String, passOrAccessToken: String)) {
 //        gitProvider?.add(sshKey: authItem)
     }
     
@@ -79,7 +80,7 @@ struct AddAccessTokenView: View, InstructionView {
             text: "Enter your\(isPassword ? "" : " new") \(hostName) \(isPassword ? "password" : "access token") below:",
             secureInput: (isPassword ? "password" : "access token", $passwordOrAccessToken)
         )
-        testingStep(i: startI + 3, with: AccessToken(, successMessage: "SSH is successfully setup for \(hostName)!")
+        testingStep(i: startI + 3, with: (username: username, passOrAccessToken: passwordOrAccessToken), successMessage: "\(isPassword ? "Password authentication" : "Access token") is successfully setup for \(hostName)!")
     }
     
     var body: some View {
