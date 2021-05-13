@@ -115,11 +115,6 @@ struct AddAccessTokenView: View, InstructionView {
             text: "Enter your\(isPassword ? "" : " new") \(hostName) \(isPassword ? "password" : "access token") below:",
             secureInput: (isPassword ? "password" : "access token", $passwordOrAccessToken)
         )
-        instruction(
-            i: startI + 2,
-            text: "Enter your\(isPassword ? "" : " new") \(hostName) \(isPassword ? "password" : "access token") below:",
-            secureInput: (isPassword ? "password" : "access token", $passwordOrAccessToken)
-        )
         instruction(i: startI + 3, text: "Sync securely over iCloud Keychain? (recommended)", toggle: $iCloudSync)
         if isPassword {
             forceAddWithoutTestingStep(i: startI + 4)
