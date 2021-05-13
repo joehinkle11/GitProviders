@@ -54,7 +54,13 @@ struct AddAccessTokenView: View, InstructionView {
                         })
                         missingRepoContents = !hasRepoContents
                         missingRepoList = !hasRepoList
-                        testingResult = hasRepoContents && hasRepoList
+                        if hasRepoContents && hasRepoList {
+                            testingResult = true
+                            forceAdd(authItem: authItem)
+                        } else {
+                            testingResult = false
+                            gitProvider?.deleteAccessTokenOrPassword()
+                        }
                     } else {
                         testingResult = false
                     }

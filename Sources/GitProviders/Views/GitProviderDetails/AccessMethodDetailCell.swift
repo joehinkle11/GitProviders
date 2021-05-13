@@ -166,7 +166,7 @@ struct AccessMethodDetailCell: View, Identifiable {
                                     Text("You've stored your actual account password. This is bad practice and you should consider deleting this and changing to using a real access token.")
                                 }
                             }
-                            Text("○○○○○○○○○").font(.footnote).foregroundColor(.gray)
+                            Text("••••••••••••••••••").font(.footnote).foregroundColor(.gray)
                             message
                         }
                     }

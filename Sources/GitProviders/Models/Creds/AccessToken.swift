@@ -20,7 +20,7 @@ extension AccessTokenOrPassword: Storeable {
         let archiver = NSKeyedArchiver(requiringSecureCoding: true)
         archiver.encode(username, forKey: "username")
         archiver.encode(accessTokenOrPassword, forKey: "accessTokenOrPassword")
-        archiver.encode(isPassword, forKey: "isPassword")
+        archiver.encode(isPassword ? "1" : "0", forKey: "isPassword")
         archiver.finishEncoding()
         return archiver.encodedData
     }
@@ -34,7 +34,7 @@ extension AccessTokenOrPassword: Storeable {
         }
         guard let username = unarchiver.decodeObject(forKey: "username") as? String else { return nil }
         guard let accessTokenOrPassword = unarchiver.decodeObject(forKey: "accessTokenOrPassword") as? String else { return nil }
-        guard let isPassword = unarchiver.decodeObject(forKey: "isPassword") as? Bool else { return nil }
-        self.init(username: username, accessTokenOrPassword: accessTokenOrPassword, isPassword: isPassword)
+        guard let isPassword = unarchiver.decodeObject(forKey: "isPassword") as? String else { return nil }
+        self.init(username: username, accessTokenOrPassword: accessTokenOrPassword, isPassword: isPassword == "1")
     }
 }
