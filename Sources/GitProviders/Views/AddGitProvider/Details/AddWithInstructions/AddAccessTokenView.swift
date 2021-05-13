@@ -115,7 +115,15 @@ struct AddAccessTokenView: View, InstructionView {
         } else {
             testingStep(i: startI + 3, with: (username: username, passOrAccessToken: passwordOrAccessToken, gitClient: GitHubAPI.shared), successMessage: "Access token is successfully setup for \(hostName)!")
             if testingResult == false {
-                
+                if missingRepoContents {
+                    Text("Missing permission required for accessing repository contents").foregroundColor(.red).font(.footnote)
+                }
+                if missingRepoList {
+                    Text("Missing permission required for discovering your private repositories").foregroundColor(.red).font(.footnote)
+                }
+                if missingRepoContents || missingRepoList {
+                    Text("You can fix this by going back to \(hostName) and creating a new access token with the permissions outlined above").font(.footnote)
+                }
             }
         }
     }
