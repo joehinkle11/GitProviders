@@ -24,6 +24,9 @@ struct AddAccessTokenView: View, InstructionView {
     
     @State private var verifiedPerms: [PermScope] = []
     
+    @State private var missingRepoList = false
+    @State private var missingRepoContents = false
+    
     func testConnection(
         using authItem: (username: String, passOrAccessToken: String, gitClient: GitAPI)
     ) {
@@ -34,8 +37,23 @@ struct AddAccessTokenView: View, InstructionView {
                 DispatchQueue.main.async {
                     if let perms = perms {
                         verifiedPerms = perms
-//                        testingResult = true // todo
-                        testingResult = false
+                        let hasRepoContents = verifiedPerms.contains(where: {
+                            if case .repoContents = $0 {
+                                return true
+                            } else {
+                                return false
+                            }
+                        })
+                        let hasRepoList = verifiedPerms.contains(where: {
+                            if case .repoList = $0 {
+                                return true
+                            } else {
+                                return false
+                            }
+                        })
+                        missingRepoContents = !hasRepoContents
+                        missingRepoList = !hasRepoList
+                        testingResult = hasRepoContents && hasRepoList
                     } else {
                         testingResult = false
                     }
@@ -96,6 +114,9 @@ struct AddAccessTokenView: View, InstructionView {
             }.disabled(passwordIsNotReady).opacity(passwordIsNotReady ? 0.5 : 1)
         } else {
             testingStep(i: startI + 3, with: (username: username, passOrAccessToken: passwordOrAccessToken, gitClient: GitHubAPI.shared), successMessage: "Access token is successfully setup for \(hostName)!")
+            if testingResult == false {
+                
+            }
         }
     }
     
