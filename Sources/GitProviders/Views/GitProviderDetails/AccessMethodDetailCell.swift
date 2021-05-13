@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import GitClient
+import GitAPI
 
 struct AccessMethodDetailCell: View, Identifiable {
     var id: Int { accessMethodData.hash }
@@ -28,9 +28,9 @@ struct AccessMethodDetailCell: View, Identifiable {
         onDeviceCred != nil
     }
     
-    func testConnection(cred: Cred) {
+    func testConnection(sshCred: SSHKey) {
         isTesting = true
-        GitProviders.testConnection(with: cred, domain: gitProvider.preset.domain ?? gitProvider.customDetails?.domain ?? "") {
+        GitProviders.testConnection(with: sshCred, domain: gitProvider.preset.domain ?? gitProvider.customDetails?.domain ?? "") {
             testingResult = true
             isTesting = false
             hasFailedTest = false
@@ -43,6 +43,32 @@ struct AccessMethodDetailCell: View, Identifiable {
             hasFailedTest = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                 testingResult = nil
+            }
+        }
+    }
+    
+    func testConnection(tokenCred: AccessTokenOrPassword, gitClient: GitAPI) {
+        isTesting = true
+        DispatchQueue.global(qos: .background).async {
+            gitClient.userInfo = .init(username: tokenCred.username, authToken: tokenCred.accessTokenOrPassword)
+            gitClient.fetchGrantedScopes { perms, _ in
+                DispatchQueue.main.async {
+                    if perms?.count ?? 0 > 0 {
+                        testingResult = true
+                        isTesting = false
+                        hasFailedTest = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            testingResult = nil
+                        }
+                    } else {
+                        testingResult = false
+                        isTesting = false
+                        hasFailedTest = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            testingResult = nil
+                        }
+                    }
+                }
             }
         }
     }
@@ -68,14 +94,26 @@ struct AccessMethodDetailCell: View, Identifiable {
                 }.padding(.leading)
             } else {
                 if let onDeviceCred = onDeviceCred {
-                    Divider()
-                    Button {
-                        isTesting = true
-                        testConnection(cred: onDeviceCred)
-                    } label: {
-                        Label("Test", systemImage: "wifi")
-                            .font(nil)
-                            .frame(width: 100)
+                    if let sshCred = onDeviceCred as? SSHKey {
+                        Divider()
+                        Button {
+                            isTesting = true
+                            testConnection(sshCred: sshCred)
+                        } label: {
+                            Label("Test", systemImage: "wifi")
+                                .font(nil)
+                                .frame(width: 100)
+                        }
+                    } else if let tokenCred = onDeviceCred as? AccessTokenOrPassword, let gitAPI = gitProvider.preset.api {
+                        Divider()
+                        Button {
+                            isTesting = true
+                            testConnection(tokenCred: tokenCred, gitClient: gitAPI)
+                        } label: {
+                            Label("Test", systemImage: "wifi")
+                                .font(nil)
+                                .frame(width: 100)
+                        }
                     }
                     if let testingResult = testingResult {
                         if testingResult {

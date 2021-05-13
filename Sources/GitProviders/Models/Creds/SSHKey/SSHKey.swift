@@ -9,6 +9,7 @@ import Foundation
 import Security
 import KeychainAccess
 
+/// Should be safe in that using and passing around the object does not put any sensitive info into memory. Any sensitive info should be exposed through explicit use of a method.
 struct SSHKey: Cred {
     let keychain: Keychain
     let publicKeyKeychainName: String

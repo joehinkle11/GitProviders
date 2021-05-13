@@ -7,30 +7,20 @@
 
 import Foundation
 import KeychainAccess
-import GitAPI
 
-struct AccessToken: Cred {
-    let keychain: Keychain
-    let accessTokenKeychainName: String
-    
-    /// do not retain in memory, this data is highly sensitive!
-    var userInfo: UserInfo? {
-        if let data = try? keychain.getData(accessTokenKeychainName) {
-            return UserInfo(data: data)
-        }
-        return nil
-    }
+struct AccessTokenOrPassword: Cred {
+    let username: String
+    let accessTokenOrPassword: String
+    let isPassword: Bool // if false, means it's an access token
 }
 
-// used as well for passwords because they function exactly the same
-typealias PasswordCred = AccessToken
-
 // make it so that we can store the UserInfo type (which holds username and access token) in the keychain
-extension UserInfo: Storeable {
+extension AccessTokenOrPassword: Storeable {
     func encode() -> Data {
         let archiver = NSKeyedArchiver(requiringSecureCoding: true)
         archiver.encode(username, forKey: "username")
-        archiver.encode(authToken, forKey: "authToken")
+        archiver.encode(accessTokenOrPassword, forKey: "accessTokenOrPassword")
+        archiver.encode(isPassword, forKey: "isPassword")
         archiver.finishEncoding()
         return archiver.encodedData
     }
@@ -43,7 +33,8 @@ extension UserInfo: Storeable {
             unarchiver.finishDecoding()
         }
         guard let username = unarchiver.decodeObject(forKey: "username") as? String else { return nil }
-        guard let authToken = unarchiver.decodeObject(forKey: "authToken") as? String else { return nil }
-        self.init(username: username, authToken: authToken)
+        guard let accessTokenOrPassword = unarchiver.decodeObject(forKey: "accessTokenOrPassword") as? String else { return nil }
+        guard let isPassword = unarchiver.decodeObject(forKey: "isPassword") as? Bool else { return nil }
+        self.init(username: username, accessTokenOrPassword: accessTokenOrPassword, isPassword: isPassword)
     }
 }

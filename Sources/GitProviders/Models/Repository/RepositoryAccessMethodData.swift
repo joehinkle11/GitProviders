@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import GitAPI
 
 protocol RepositoryAccessMethodData {
     var hash: Int { get }
@@ -22,5 +21,5 @@ struct AccessTokenAccessMethodData: RepositoryAccessMethodData {
     var hash: Int { 1 }
     
     /// gets sensitive info!
-    let getUserInfo: () -> UserInfo?
+    let getUserInfo: () -> AccessTokenOrPassword?
 }

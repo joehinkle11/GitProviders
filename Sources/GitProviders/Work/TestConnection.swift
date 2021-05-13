@@ -8,10 +8,10 @@
 import Foundation
 import GitClient
 
-func testConnection(with cred: Cred, domain: String, onSuccess success: @escaping () -> Void, onFail fail: @escaping () -> Void) {
+func testConnection(with authItem: SSHKey, domain: String, onSuccess success: @escaping () -> Void, onFail fail: @escaping () -> Void) {
     DispatchQueue.global(qos: .background).async {
-        if let authItem = cred as? SSHKey,
-           let privateKey = authItem.privateKeyAsPEMString {
+//        if let authItem = cred as? SSHKey,
+           if let privateKey = authItem.privateKeyAsPEMString {
             let result = testSSH(privateKey: privateKey, forDomain: domain)
             DispatchQueue.main.async {
                 if result {
@@ -20,10 +20,10 @@ func testConnection(with cred: Cred, domain: String, onSuccess success: @escapin
                     fail()
                 }
             }
-        } else {
-            DispatchQueue.main.async {
-                fail()
-            }
+//        } else {
+//            DispatchQueue.main.async {
+//                fail()
+//            }
         }
     }
 }

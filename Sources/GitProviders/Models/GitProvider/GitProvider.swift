@@ -7,7 +7,6 @@
 
 import Foundation
 import KeychainAccess
-import GitAPI
 
 // constants
 private let _public_ssh_keys = "_public_ssh_keys"
@@ -29,7 +28,7 @@ struct GitProvider: Identifiable {
     let sshKeyDataStore: SecureSetDataStore<Data>
     
     /// We store acess tokens (senstive info!), so if icloud isn't enable for a key, another devices simply won't see the key We only allow the user to set ONE access token or password.
-    let accessTokenOrPasswordDataStore: SecureDataStore<UserInfo>
+    let accessTokenOrPasswordDataStore: SecureDataStore<AccessTokenOrPassword>
     
     
     //
