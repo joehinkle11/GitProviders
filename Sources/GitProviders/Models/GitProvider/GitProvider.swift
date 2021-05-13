@@ -7,9 +7,11 @@
 
 import Foundation
 import KeychainAccess
+import GitAPI
 
 // constants
 private let _public_ssh_keys = "_public_ssh_keys"
+private let _access_token_or_password = "_access_token_or_password"
 
 struct GitProvider: Identifiable {
     let id = UUID()
@@ -20,9 +22,19 @@ struct GitProvider: Identifiable {
     
     let currentSSHKeyOfUser: SSHKey?
     
+    //
     // data stores
-    /// we only store public keys, this way we can default to using icloud syncing without security concerns (some users may not want to use iCloud syncing with private info)
+    //
+    /// We only store public keys, this way we can default to using icloud syncing without security concerns (some users may not want to use iCloud syncing with private info).
     let sshKeyDataStore: SecureSetDataStore<Data>
+    
+    /// We store acess tokens (senstive info!), so if icloud isn't enable for a key, another devices simply won't see the key We only allow the user to set ONE access token or password.
+    let accessTokenOrPasswordDataStore: SecureDataStore<UserInfo>
+    
+    
+    //
+    //
+    //
     
     /// determines if the user will see this on their home screen
     var isActive: Bool {
@@ -47,6 +59,8 @@ struct GitProvider: Identifiable {
         self.keychain = keychain
         self.currentSSHKeyOfUser = currentSSHKeyOfUser
         self.sshKeyDataStore = .init(key: preset.rawValue + _public_ssh_keys, syncs: true, keychain: keychain)
+        // todo: fix syncing flag
+        self.accessTokenOrPasswordDataStore = .init(key: preset.rawValue + _access_token_or_password, keychain: keychain)
     }
     init(customDetails: CustomProviderDetails, keychain: Keychain, currentSSHKeyOfUser: SSHKey?) {
         self.preset = .Custom
@@ -54,6 +68,8 @@ struct GitProvider: Identifiable {
         self.keychain = keychain
         self.currentSSHKeyOfUser = currentSSHKeyOfUser
         self.sshKeyDataStore = .init(key: "custom_" + customDetails.customName + _public_ssh_keys, syncs: true, keychain: keychain)
+        // todo: fix syncing flag
+        self.accessTokenOrPasswordDataStore = .init(key: "custom_" + customDetails.customName + _access_token_or_password, keychain: keychain)
     }
     
     var baseKeyName: String? {
@@ -91,9 +107,13 @@ struct GitProvider: Identifiable {
         }
         return false
     }
+    var supportsAccessTokenOrPassword: Bool {
+        return accessTokenOrPasswordDataStore.exists()
+    }
     
     func delete() {
         sshKeyDataStore.removeAll()
+        accessTokenOrPasswordDataStore.removeAll()
     }
     
     func createAccessMethodDetailCells(
@@ -103,7 +123,20 @@ struct GitProvider: Identifiable {
     ) -> [AccessMethodDetailCell] {
         switch accessMethod {
         case .AccessToken:
-            return []
+            if accessTokenOrPasswordDataStore.exists() {
+                return [
+                    AccessMethodDetailCell(
+                        gitProviderStore: gitProviderStore,
+                        accessMethodData: AccessTokenAccessMethodData(getUserInfo: {
+                            accessTokenOrPasswordDataStore.read()
+                        }),
+                        accessMethod: accessMethod,
+                        gitProvider: gitProvider
+                    )
+                ]
+            } else {
+                return []
+            }
         case .SSH:
             return self.allSSHPublicKeys().map { publicKeyData in
                 AccessMethodDetailCell(

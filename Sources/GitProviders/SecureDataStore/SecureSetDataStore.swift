@@ -23,9 +23,11 @@ struct SecureSetDataStore<T: Storeable> {
             try? keychain.synchronizable(syncs).remove(key)
         }
     }
-    
+    func exists() -> Bool {
+        (try? keychain.synchronizable(syncs).contains(key)) ?? false
+    }
     func all() -> Set<T> {
-        if let data = try? keychain.synchronizable(true).getData(key) {
+        if let data = try? keychain.synchronizable(syncs).getData(key) {
             if let allDatas = try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSSet.self, from: data) as? Set<Data> {
                 return Set(allDatas.compactMap {
                     T.init(data: $0)
