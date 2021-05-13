@@ -44,7 +44,7 @@ enum RepositoryAccessMethods: String, Identifiable {
     var listDescription: String {
         switch self {
         case .AccessToken:
-            return "Access Tokens"
+            return "Access Token"
         case .SSH:
             return "SSH Keys"
         case .Password:

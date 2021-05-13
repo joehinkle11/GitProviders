@@ -20,6 +20,7 @@ struct SSHAccessMethodData: RepositoryAccessMethodData {
 struct AccessTokenAccessMethodData: RepositoryAccessMethodData {
     var hash: Int { 1 }
     
+    let username: String
     let isPassword: Bool
     /// gets sensitive info!
     let getData: () -> AccessTokenOrPassword?

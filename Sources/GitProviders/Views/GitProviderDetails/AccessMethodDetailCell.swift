@@ -20,6 +20,8 @@ struct AccessMethodDetailCell: View, Identifiable {
     @State var testingResult: Bool? = nil
     @State var hasFailedTest = false
     
+    @State private var showPrivateInfo = false
+    
     var onDeviceCred: Cred? {
         accessMethod.getOnDeviceCred(gitProviderStore: gitProviderStore, accessMethodData: accessMethodData)
     }
@@ -152,13 +154,32 @@ struct AccessMethodDetailCell: View, Identifiable {
                     }).buttonStyle(PlainButtonStyle())
                 }
             } else if let data = accessMethodData as? AccessTokenAccessMethodData {
-                Button(action: {
-                    tapped = true
-                }, label: {
-                    if tapped {
+                if tapped {
+                    Text(data.username)
+                    if showPrivateInfo {
+                        CopiableCellView(copiableText: data.getData()?.accessTokenOrPassword ?? "", addRightOfButton: AnyView(testButton)).buttonStyle(BorderlessButtonStyle())
                     } else {
+                        Text("●●●●●●●●●●")
                         HStack {
-                            Text("\(data.isPassword ? "Password" : "Access Token"): ") + Text("●●●●●●●●●●").font(.footnote).foregroundColor(.gray)
+                            Button {
+                                showPrivateInfo = true
+                            } label: {
+                                Label("Show", systemImage: "eye")
+                                    .font(nil)
+                                    .frame(width: 100)
+                            }
+                            testButton
+                        }.buttonStyle(BorderlessButtonStyle())
+                    }
+                } else {
+                    Button(action: {
+                        tapped = true
+                    }, label: {
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text("Username: ") + Text(data.username).font(.footnote).foregroundColor(.gray)
+                                Text("\(data.isPassword ? "Password" : "Access Token"): ") + Text("●●●●●●●●●●").font(.footnote).foregroundColor(.gray)
+                            }
                             message
                             if data.isPassword {
                                 Spacer()
@@ -166,8 +187,8 @@ struct AccessMethodDetailCell: View, Identifiable {
                                 Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.orange)
                             }
                         }
-                    }
-                }).buttonStyle(PlainButtonStyle())
+                    }).buttonStyle(PlainButtonStyle())
+                }
             }
         }.animation(.easeOut)
     }

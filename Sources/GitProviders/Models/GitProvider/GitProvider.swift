@@ -123,12 +123,14 @@ struct GitProvider: Identifiable {
         switch accessMethod {
         case .AccessToken:
             if accessTokenOrPasswordDataStore.exists() {
-                // while it is less than ideal, we will load the whole item into memory so that we can get the "isPassword" flag
-                let isPassword = accessTokenOrPasswordDataStore.read()?.isPassword ?? false
+                let info = accessTokenOrPasswordDataStore.read()
+                let username = info?.username ?? ""
+                let isPassword = info?.isPassword ?? false
                 return [
                     AccessMethodDetailCell(
                         gitProviderStore: gitProviderStore,
                         accessMethodData: AccessTokenAccessMethodData(
+                            username: username,
                             isPassword: isPassword,
                             getData: {
                                 accessTokenOrPasswordDataStore.read()
