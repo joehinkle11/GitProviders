@@ -22,6 +22,7 @@ public final class GitHubAPI: GitAPI {
                 for scope in scopeStrings {
                     if scope == "repo" {
                         scopes.append(.repoList(raw: scope))
+                        scopes.append(.repoContents(raw: scope))
                     } else {
                         scopes.append(.unknown(raw: scope))
                     }

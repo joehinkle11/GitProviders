@@ -95,6 +95,13 @@ struct AddAccessTokenView: View, InstructionView {
         username == "" || passwordOrAccessToken == ""
     }
     
+    func forceAddWithoutTestingStep(i: Int) -> some View {
+        instruction(i: i, text: isPassword ? "Add Password" : "Add Access Token") {
+            forceAdd(username: username, passOrAccessToken: passwordOrAccessToken)
+            gitProviderStore.moveBackToFirstPage()
+        }.disabled(passwordIsNotReady).opacity(passwordIsNotReady ? 0.5 : 1)
+    }
+    
     @ViewBuilder
     func listPart2(startI: Int) -> some View {
         instruction(
@@ -108,22 +115,23 @@ struct AddAccessTokenView: View, InstructionView {
             secureInput: (isPassword ? "password" : "access token", $passwordOrAccessToken)
         )
         if isPassword {
-            instruction(i: startI + 3, text: "Add Password") {
-                forceAdd(username: username, passOrAccessToken: passwordOrAccessToken)
-                gitProviderStore.moveBackToFirstPage()
-            }.disabled(passwordIsNotReady).opacity(passwordIsNotReady ? 0.5 : 1)
+            forceAddWithoutTestingStep(i: startI + 3)
         } else {
-            testingStep(i: startI + 3, with: (username: username, passOrAccessToken: passwordOrAccessToken, gitClient: GitHubAPI.shared), successMessage: "Access token is successfully setup for \(hostName)!")
-            if testingResult == false {
-                if missingRepoContents {
-                    Text("Missing permission required for accessing repository contents").foregroundColor(.red).font(.footnote)
+            if let gitAPI = preset.api {
+                testingStep(i: startI + 3, with: (username: username, passOrAccessToken: passwordOrAccessToken, gitClient: gitAPI), successMessage: "Access token is successfully setup for \(hostName)!")
+                if testingResult == false {
+                    if missingRepoContents {
+                        Text("Missing permission(s) required for accessing repository contents").foregroundColor(.red).font(.footnote)
+                    }
+                    if missingRepoList {
+                        Text("Missing permission(s) required for discovering your private repositories").foregroundColor(.red).font(.footnote)
+                    }
+                    if missingRepoContents || missingRepoList {
+                        Text("You can fix this by going back to \(hostName) and creating a new access token with the permissions outlined above").font(.footnote)
+                    }
                 }
-                if missingRepoList {
-                    Text("Missing permission required for discovering your private repositories").foregroundColor(.red).font(.footnote)
-                }
-                if missingRepoContents || missingRepoList {
-                    Text("You can fix this by going back to \(hostName) and creating a new access token with the permissions outlined above").font(.footnote)
-                }
+            } else {
+                forceAddWithoutTestingStep(i: startI + 3)
             }
         }
     }

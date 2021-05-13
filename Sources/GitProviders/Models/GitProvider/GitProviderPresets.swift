@@ -5,6 +5,8 @@
 //  Created by Joseph Hinkle on 5/5/21.
 //
 
+import GitAPI
+
 enum GitProviderPresets: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
     
@@ -22,6 +24,21 @@ enum GitProviderPresets: String, CaseIterable, Identifiable {
             return rawValue.lowercased() + ".org"
         case .GitLab:
             return rawValue.lowercased() + ".com"
+        case .Custom:
+            return nil
+        }
+    }
+    
+    var api: GitAPI? {
+        switch self {
+        case .GitHub:
+            return GitHubAPI.shared
+        case .BitBucket:
+//            return BitBucketAPI.shared
+            return nil
+        case .GitLab:
+//            return GitLabAPI.shared
+            return nil
         case .Custom:
             return nil
         }
