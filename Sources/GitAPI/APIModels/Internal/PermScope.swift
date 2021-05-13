@@ -5,12 +5,12 @@
 //  Created by Joseph Hinkle on 5/12/21.
 //
 
-enum PermScope: InternalModel {
+public enum PermScope: InternalModel {
     case repoContents(raw: String) // can see contents of a repos
     case repoList(raw: String) // can see existence of repos user has access to
     case unknown(raw: String)
     
-    var raw: String {
+    public var raw: String {
         switch self {
         case .repoContents(let raw):
             return raw

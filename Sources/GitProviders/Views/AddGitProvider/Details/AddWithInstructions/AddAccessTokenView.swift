@@ -6,10 +6,10 @@
 //
 
 import SwiftUI
-import GitClient
+import GitAPI
 
 struct AddAccessTokenView: View, InstructionView {
-    typealias T = (username: String, passOrAccessToken: String)
+    typealias T = (username: String, passOrAccessToken: String, gitClient: GitAPI)
     
     @ObservedObject var gitProviderStore: GitProviderStore
     let preset: GitProviderPresets
@@ -22,28 +22,30 @@ struct AddAccessTokenView: View, InstructionView {
     @State private var username = ""
     @State private var passwordOrAccessToken = ""
     
-    func testConnection(using authItem: (username: String, passOrAccessToken: String)) {
-        if let domain = preset.domain ?? customDetails?.domain {
-            let domain = "https://github.com/joehinkle11/LiveAppWebServer"
-            isTesting = true
-            DispatchQueue.global(qos: .background).async {
-//                let result = testUsernamePassword(username: authItem.username, password: authItem.passOrAccessToken, forDomain: domain)
-//                if result {
-//                    // success, therefore mark this git provider as working with ssh
-////                    gitProvider?.add(sshKey: authItem)
-//                } else {
-//                    // failed, therefore mark this git provider as NOT working with ssh
-////                    gitProvider?.remove(sshKey: authItem)
-//                }
-//                DispatchQueue.main.async {
-//                    testingResult = result
-//                    isTesting = false
-//                }
+    @State private var verifiedPerms: [PermScope] = []
+    
+    func testConnection(
+        using authItem: (username: String, passOrAccessToken: String, gitClient: GitAPI)
+    ) {
+        isTesting = true
+        DispatchQueue.global(qos: .background).async {
+            authItem.gitClient.userInfo = .init(username: authItem.username, authToken: authItem.passOrAccessToken)
+            authItem.gitClient.fetchGrantedScopes { perms, _ in
+                DispatchQueue.main.async {
+                    if let perms = perms {
+                        verifiedPerms = perms
+//                        testingResult = true // todo
+                        testingResult = false
+                    } else {
+                        testingResult = false
+                    }
+                    isTesting = false
+                }
             }
         }
     }
     
-    func forceAdd(authItem: (username: String, passOrAccessToken: String)) {
+    func forceAdd(authItem: (username: String, passOrAccessToken: String, gitClient: GitAPI)) {
 //        gitProvider?.add(sshKey: authItem)
     }
     
@@ -80,7 +82,25 @@ struct AddAccessTokenView: View, InstructionView {
             text: "Enter your\(isPassword ? "" : " new") \(hostName) \(isPassword ? "password" : "access token") below:",
             secureInput: (isPassword ? "password" : "access token", $passwordOrAccessToken)
         )
-        testingStep(i: startI + 3, with: (username: username, passOrAccessToken: passwordOrAccessToken), successMessage: "\(isPassword ? "Password authentication" : "Access token") is successfully setup for \(hostName)!")
+        testingStep(i: startI + 3, with: (username: username, passOrAccessToken: passwordOrAccessToken, gitClient: GitHubAPI.shared), successMessage: "\(isPassword ? "Password authentication" : "Access token") is successfully setup for \(hostName)!")
+    }
+    
+    @ViewBuilder
+    func contentPermItem(_ item: String) -> some View {
+        // nil = has not been validated, false = invalid, true = valid
+        let isValidated: Bool? = testingResult == nil ? nil : verifiedPerms.contains(where: {$0.raw == item})
+        HStack(spacing: 0) {
+            Image(systemName: isValidated == nil ? "circle.fill" : (isValidated == true ? "checkmark.circle" : "x.circle"))
+                .scaleEffect(isValidated == nil ? 0.36 : 0.8)
+                .padding(.trailing, isValidated == nil ? 0 : 5)
+            Text(item)
+            if isValidated == false {
+                Spacer()
+                Text("access token missing permission \"\(item)\"").font(.footnote)
+            }
+        }.padding(.leading, 15)
+        .padding(.bottom, 5)
+        .foregroundColor(isValidated == nil ? nil : (isValidated == true ? .green : .red))
     }
     
     var body: some View {
@@ -114,10 +134,7 @@ struct AddAccessTokenView: View, InstructionView {
                                 .padding(.bottom, 5)
                             ForEach(0..<contentPerms.count) { i in
                                 let contentPerm = contentPerms[i]
-                                HStack(spacing: 0) {
-                                    Image(systemName: "circle.fill").scaleEffect(0.36)
-                                    Text(contentPerm)
-                                }.padding(.leading, 15).padding(.bottom, 5)
+                                contentPermItem(contentPerm)
                             }
                         }
                         if extraPermsNeededForList.count > 0 {
@@ -126,10 +143,7 @@ struct AddAccessTokenView: View, InstructionView {
                                     .padding(.bottom, 5)
                                 ForEach(0..<extraPermsNeededForList.count) { i in
                                     let extraPermNeededForList = extraPermsNeededForList[i]
-                                    HStack(spacing: 0) {
-                                        Image(systemName: "circle.fill").scaleEffect(0.36)
-                                        Text(extraPermNeededForList)
-                                    }.padding(.leading, 15).padding(.bottom, 5)
+                                    contentPermItem(extraPermNeededForList)
                                 }
                             }
                             listPart2(startI: 4)

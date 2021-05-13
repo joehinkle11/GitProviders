@@ -7,20 +7,27 @@
 
 import Foundation
 
-final class GitHubAPI: GitAPI {
-    let baseUrl = URL(string: "https://api.github.com/")!
-    var userInfo: UserInfo?
+public final class GitHubAPI: GitAPI {
+    public let baseUrl = URL(string: "https://api.github.com/")!
+    public var userInfo: UserInfo?
     
-    static let shared: GitHubAPI = .init()
+    public static let shared: GitHubAPI = .init()
     init() {}
     
-    func fetchGrantedScopes(callback: @escaping (_ grantedScopes: [PermScope]?, _ error: Error?) -> Void) {
+    public func fetchGrantedScopes(callback: @escaping (_ grantedScopes: [PermScope]?, _ error: Error?) -> Void) {
         self.get("user") { response, error in
+            #if DEBUG
+            print(self.userInfo)
+            #endif
             if let response = response {
                 let scopeStrings = response.headers.readStringList(from: "x-oauth-scopes")
                 var scopes: [PermScope] = []
                 for scope in scopeStrings {
-                    scopes.append(.repoList(raw: "repo"))
+                    if scope == "repo" {
+                        scopes.append(.repoList(raw: scope))
+                    } else {
+                        scopes.append(.unknown(raw: scope))
+                    }
                 }
                 callback(scopes, nil)
             } else {
@@ -28,13 +35,8 @@ final class GitHubAPI: GitAPI {
             }
         }
     }
-    
-    struct GitHubRepoModel2: GitHubModel {
-        let name: String
-        let ext: Int
-    }
 
-    func fetchUserRepos(callback: @escaping ([RepoModel]?, Error?) -> Void) {
+    public func fetchUserRepos(callback: @escaping ([RepoModel]?, Error?) -> Void) {
         if let username = userInfo?.username {
             self.get("search/repositories", parameters: [
                 "q": "user:\(username)",

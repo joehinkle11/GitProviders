@@ -6,7 +6,7 @@
 //
 
 // clean internal model
-protocol InternalModel {}
+public protocol InternalModel {}
 
 // providers
 protocol GitHubModel: Decodable {}

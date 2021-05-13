@@ -12,12 +12,17 @@ import Combine
 fileprivate let gitAPIProcessingQueue = DispatchQueue(label: "git-api-pq")
 fileprivate var anyCancellables: [AnyCancellable] = []
 
-struct UserInfo {
+public struct UserInfo {
     let username: String
     let authToken: String
+    
+    public init(username: String, authToken: String) {
+        self.username = username
+        self.authToken = authToken
+    }
 }
 
-protocol GitAPI: AnyObject {
+public protocol GitAPI: AnyObject {
     var baseUrl: URL { get }
     var userInfo: UserInfo? { get set }
     static var shared: Self { get }
