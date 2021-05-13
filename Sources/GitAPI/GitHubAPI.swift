@@ -16,9 +16,6 @@ public final class GitHubAPI: GitAPI {
     
     public func fetchGrantedScopes(callback: @escaping (_ grantedScopes: [PermScope]?, _ error: Error?) -> Void) {
         self.get("user") { response, error in
-            #if DEBUG
-            print(self.userInfo)
-            #endif
             if let response = response {
                 let scopeStrings = response.headers.readStringList(from: "x-oauth-scopes")
                 var scopes: [PermScope] = []

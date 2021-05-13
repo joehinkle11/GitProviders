@@ -46,6 +46,9 @@ struct AddAccessTokenView: View, InstructionView {
     }
     
     func forceAdd(authItem: (username: String, passOrAccessToken: String, gitClient: GitAPI)) {
+        forceAdd(username: authItem.username, passOrAccessToken: authItem.passOrAccessToken)
+    }
+    func forceAdd(username: String, passOrAccessToken: String) {
 //        gitProvider?.add(sshKey: authItem)
     }
     
@@ -70,6 +73,10 @@ struct AddAccessTokenView: View, InstructionView {
         return "It is bad practice to use your real \(name)password\(evenText). Furthermore, many hosting providers are no longer allowing users to clone repositories using their real passwords, so it may not be possible to setup password authentication for this provider. Consider setting up with another authentication method like SSH or with personal access tokens."
     }
     
+    var passwordIsNotReady: Bool {
+        username == "" || passwordOrAccessToken == ""
+    }
+    
     @ViewBuilder
     func listPart2(startI: Int) -> some View {
         instruction(
@@ -82,7 +89,14 @@ struct AddAccessTokenView: View, InstructionView {
             text: "Enter your\(isPassword ? "" : " new") \(hostName) \(isPassword ? "password" : "access token") below:",
             secureInput: (isPassword ? "password" : "access token", $passwordOrAccessToken)
         )
-        testingStep(i: startI + 3, with: (username: username, passOrAccessToken: passwordOrAccessToken, gitClient: GitHubAPI.shared), successMessage: "\(isPassword ? "Password authentication" : "Access token") is successfully setup for \(hostName)!")
+        if isPassword {
+            instruction(i: startI + 3, text: "Add Password") {
+                forceAdd(username: username, passOrAccessToken: passwordOrAccessToken)
+                gitProviderStore.moveBackToFirstPage()
+            }.disabled(passwordIsNotReady).opacity(passwordIsNotReady ? 0.5 : 1)
+        } else {
+            testingStep(i: startI + 3, with: (username: username, passOrAccessToken: passwordOrAccessToken, gitClient: GitHubAPI.shared), successMessage: "Access token is successfully setup for \(hostName)!")
+        }
     }
     
     @ViewBuilder
