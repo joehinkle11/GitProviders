@@ -2,6 +2,25 @@
 
 This package allows for the management of git hosting provider access tokens, credentials and ssh keys stored securely in Keychain with simple SwiftUI views.
 
+## Screenshots
+
+<img width="508" alt="image" src="https://user-images.githubusercontent.com/8505851/118075914-41675e80-b36e-11eb-94e0-c85d62c0cfa0.png">
+
+<details><summary>Click here for more screenshots</summary>
+<p>
+
+<img width="509" alt="image" src="https://user-images.githubusercontent.com/8505851/118075902-3ad8e700-b36e-11eb-9195-daa68cd43af7.png">
+
+![image](https://user-images.githubusercontent.com/8505851/118075854-2268cc80-b36e-11eb-8671-a37eea2ffcd5.png)
+
+<img width="511" alt="image" src="https://user-images.githubusercontent.com/8505851/118075878-2eed2500-b36e-11eb-8199-eee996475dc9.png">
+
+<img width="507" alt="image" src="https://user-images.githubusercontent.com/8505851/118075932-4a583000-b36e-11eb-9425-870dccae438d.png">
+</p>
+</details>
+
+
+
 ## Example Usage
 
 ```swift
