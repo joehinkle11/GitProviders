@@ -76,12 +76,10 @@ enum RepositoryAccessMethods: String, Identifiable {
     
     func removeMessage(accessMethodData: RepositoryAccessMethodData, profileName: String) -> String {
         switch self {
-        case .AccessToken:
-            fatalError()
+        case .AccessToken, .Password:
+            return "Are you sure what want to delete the \((accessMethodData as? AccessTokenAccessMethodData)?.isPassword ?? false ? "password": "access token") for profile \(profileName)?"
         case .SSH:
             return "Are you sure what want to disassociate the public key \((try? (accessMethodData as? SSHAccessMethodData)?.publicKeyData.publicPEMKeyToSSHFormat()) ?? "") with profile \(profileName)?"
-        case .Password:
-            fatalError()
         case .OAuth:
             fatalError()
         }

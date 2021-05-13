@@ -157,17 +157,14 @@ struct AccessMethodDetailCell: View, Identifiable {
                 }, label: {
                     if tapped {
                     } else {
-                        VStack(spacing: 8) {
-                            if data.isPassword {
-                                HStack {
-                                    Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.orange)
-                                    Text("Warning")
-                                    Spacer()
-                                    Text("You've stored your actual account password. This is bad practice and you should consider deleting this and changing to using a real access token.")
-                                }
-                            }
-                            Text("••••••••••••••••••").font(.footnote).foregroundColor(.gray)
+                        HStack {
+                            Text("\(data.isPassword ? "Password" : "Access Token"): ") + Text("●●●●●●●●●●").font(.footnote).foregroundColor(.gray)
                             message
+                            if data.isPassword {
+                                Spacer()
+                                Text("You've stored your actual account password. Consider deleting and changing to a real access token.").font(.footnote).foregroundColor(.gray)
+                                Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.orange)
+                            }
                         }
                     }
                 }).buttonStyle(PlainButtonStyle())
