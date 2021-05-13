@@ -13,13 +13,14 @@ protocol RepositoryAccessMethodData {
 
 struct SSHAccessMethodData: RepositoryAccessMethodData {
     var hash: Int { publicKeyData.hashValue }
-    
+
     let publicKeyData: Data
 }
 
 struct AccessTokenAccessMethodData: RepositoryAccessMethodData {
     var hash: Int { 1 }
     
+    let isPassword: Bool
     /// gets sensitive info!
-    let getUserInfo: () -> AccessTokenOrPassword?
+    let getData: () -> AccessTokenOrPassword?
 }

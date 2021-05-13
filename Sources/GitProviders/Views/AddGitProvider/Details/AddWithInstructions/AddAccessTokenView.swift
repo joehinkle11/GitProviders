@@ -68,7 +68,14 @@ struct AddAccessTokenView: View, InstructionView {
         forceAdd(username: authItem.username, passOrAccessToken: authItem.passOrAccessToken)
     }
     func forceAdd(username: String, passOrAccessToken: String) {
-//        gitProvider?.add(sshKey: authItem)
+        gitProvider?.save(
+            accessTokenOrPassword: AccessTokenOrPassword(
+                username: username,
+                accessTokenOrPassword: passOrAccessToken,
+                isPassword: isPassword
+            ),
+            syncs: iCloudSync
+        )
     }
     
     var setupAccessTokenLink: String? {

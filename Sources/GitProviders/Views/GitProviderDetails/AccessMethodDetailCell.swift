@@ -151,6 +151,26 @@ struct AccessMethodDetailCell: View, Identifiable {
                         }
                     }).buttonStyle(PlainButtonStyle())
                 }
+            } else if let data = accessMethodData as? AccessTokenAccessMethodData {
+                Button(action: {
+                    tapped = true
+                }, label: {
+                    if tapped {
+                    } else {
+                        VStack(spacing: 8) {
+                            if data.isPassword {
+                                HStack {
+                                    Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.orange)
+                                    Text("Warning")
+                                    Spacer()
+                                    Text("You've stored your actual account password. This is bad practice and you should consider deleting this and changing to using a real access token.")
+                                }
+                            }
+                            Text("○○○○○○○○○").font(.footnote).foregroundColor(.gray)
+                            message
+                        }
+                    }
+                }).buttonStyle(PlainButtonStyle())
             }
         }.animation(.easeOut)
     }

@@ -123,12 +123,17 @@ struct GitProvider: Identifiable {
         switch accessMethod {
         case .AccessToken:
             if accessTokenOrPasswordDataStore.exists() {
+                // while it is less than ideal, we will load the whole item into memory so that we can get the "isPassword" flag
+                let isPassword = accessTokenOrPasswordDataStore.read()?.isPassword ?? false
                 return [
                     AccessMethodDetailCell(
                         gitProviderStore: gitProviderStore,
-                        accessMethodData: AccessTokenAccessMethodData(getUserInfo: {
-                            accessTokenOrPasswordDataStore.read()
-                        }),
+                        accessMethodData: AccessTokenAccessMethodData(
+                            isPassword: isPassword,
+                            getData: {
+                                accessTokenOrPasswordDataStore.read()
+                            }
+                        ),
                         accessMethod: accessMethod,
                         gitProvider: gitProvider
                     )
@@ -150,6 +155,14 @@ struct GitProvider: Identifiable {
         }
     }
     
+    /// stores actual access tokens and passwords
+    func save(accessTokenOrPassword: AccessTokenOrPassword, syncs: Bool) {
+        accessTokenOrPasswordDataStore.set(to: accessTokenOrPassword, syncs: syncs)
+    }
+    func deleteAccessTokenOrPassword() {
+        accessTokenOrPasswordDataStore.removeAll()
+    }
+    
     /// only stores public key
     func add(sshKey: SSHKey) {
         if let publicKey = sshKey.publicKeyData {
@@ -164,6 +177,14 @@ struct GitProvider: Identifiable {
     func remove(accessMethodData: RepositoryAccessMethodData) {
         if let sshAccessMethodData = accessMethodData as? SSHAccessMethodData {
             sshKeyDataStore.remove(value: sshAccessMethodData.publicKeyData)
+        } else if let accessTokenAccessMethodData = accessMethodData as? AccessTokenAccessMethodData {
+            if accessTokenOrPasswordDataStore.read() == accessTokenAccessMethodData.getData() {
+                accessTokenOrPasswordDataStore.removeAll()
+            } else {
+                #if DEBUG
+                fatalError("should never happen")
+                #endif
+            }
         }
     }
     func allSSHPublicKeys() -> Set<Data> {
