@@ -118,16 +118,20 @@ struct AddAccessTokenView: View, InstructionView {
             forceAddWithoutTestingStep(i: startI + 3)
         } else {
             if let gitAPI = preset.api {
-                testingStep(i: startI + 3, with: (username: username, passOrAccessToken: passwordOrAccessToken, gitClient: gitAPI), successMessage: "Access token is successfully setup for \(hostName)!")
-                if testingResult == false {
-                    if missingRepoContents {
-                        Text("Missing permission(s) required for accessing repository contents").foregroundColor(.red).font(.footnote)
+                VStack(alignment: .leading, spacing: 7) {
+                    HStack {
+                        testingStep(i: startI + 3, with: (username: username, passOrAccessToken: passwordOrAccessToken, gitClient: gitAPI), successMessage: "Access token is successfully setup for \(hostName)!")
                     }
-                    if missingRepoList {
-                        Text("Missing permission(s) required for discovering your private repositories").foregroundColor(.red).font(.footnote)
-                    }
-                    if missingRepoContents || missingRepoList {
-                        Text("You can fix this by going back to \(hostName) and creating a new access token with the permissions outlined above").font(.footnote)
+                    if testingResult == false {
+                        if missingRepoContents {
+                            Text("Missing permission(s) required for accessing repository contents").foregroundColor(.red).font(.footnote)
+                        }
+                        if missingRepoList {
+                            Text("Missing permission(s) required for discovering your private repositories").foregroundColor(.red).font(.footnote)
+                        }
+                        if missingRepoContents || missingRepoList {
+                            Text("You can fix this by going back to \(hostName) and creating a new access token with the permissions outlined above").font(.footnote)
+                        }
                     }
                 }
             } else {
