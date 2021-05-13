@@ -16,7 +16,11 @@ public final class GitHubAPI: GitAPI {
     
     public func fetchGrantedScopes(callback: @escaping (_ grantedScopes: [PermScope]?, _ error: Error?) -> Void) {
         self.get("user") { response, error in
-            if let response = response {
+            if let response = response, let gitHubUser = response.body.parse(as: GitHubUserModel.self) {
+                guard gitHubUser.login == self.userInfo?.username else {
+                    callback(nil, error)
+                    return
+                }
                 let scopeStrings = response.headers.readStringList(from: "x-oauth-scopes")
                 var scopes: [PermScope] = []
                 for scope in scopeStrings {
@@ -40,8 +44,7 @@ public final class GitHubAPI: GitAPI {
                 "q": "user:\(username)",
                 "per_page":"100"
             ]) { response, error in
-                if let response = response,
-                   let gitHubRepoList = response.body.parse(as: GitHubListResult<GitHubRepoModel>.self) {
+                if let response = response, let gitHubRepoList = response.body.parse(as: GitHubListResult<GitHubRepoModel>.self) {
                     var repos: [RepoModel] = []
                     for gitHubRepo in gitHubRepoList.items {
                         repos.append(.init(
