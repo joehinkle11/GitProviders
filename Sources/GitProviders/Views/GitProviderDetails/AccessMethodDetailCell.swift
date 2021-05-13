@@ -177,8 +177,16 @@ struct AccessMethodDetailCell: View, Identifiable {
                     }, label: {
                         HStack {
                             VStack(alignment: .leading) {
-                                Text("Username: ") + Text(data.username).font(.footnote).foregroundColor(.gray)
-                                Text("\(data.isPassword ? "Password" : "Access Token"): ") + Text("●●●●●●●●●●").font(.footnote).foregroundColor(.gray)
+                                HStack {
+                                    Text("Username: ")
+                                    Spacer()
+                                    Text(data.username).font(.footnote).foregroundColor(.gray)
+                                }
+                                HStack {
+                                    Text("\(data.isPassword ? "Password" : "Access Token"): ")
+                                    Spacer()
+                                    Text("●●●●●●●●●●").font(.footnote).foregroundColor(.gray)
+                                }
                             }
                             message
                             if data.isPassword {

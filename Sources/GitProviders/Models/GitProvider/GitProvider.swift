@@ -91,11 +91,11 @@ struct GitProvider: Identifiable {
     
     /// This provider can see what repos the user has
     var hasRepoListAccess: Bool {
-        false
+        accessTokenOrPasswordDataStore.read()?.isPassword == false
     }
     /// This provider can actually clone and change repos
     var hasRepoContents: Bool {
-        supportsSSH
+        supportsSSH || supportsAccessTokenOrPassword
     }
     
     ///
