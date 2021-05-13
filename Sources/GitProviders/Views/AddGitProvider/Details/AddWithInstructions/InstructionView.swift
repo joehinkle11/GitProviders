@@ -55,7 +55,8 @@ extension InstructionView {
         onClick: (() -> Void)? = nil,
         shouldPasteButton: Bool = false,
         input: (title: String, binding: Binding<String>)? = nil,
-        secureInput: (title: String, binding: Binding<String>)? = nil
+        secureInput: (title: String, binding: Binding<String>)? = nil,
+        toggle: Binding<Bool>? = nil
     ) -> some View {
         if let url = url {
             Link(destination: url) {
@@ -69,6 +70,10 @@ extension InstructionView {
             Button(action: onClick) {
                 instructionBase(i: i, text: text)
             }
+        } else if let toggle = toggle {
+            Toggle(isOn: toggle, label: {
+                instructionBase(i: i, text: text)
+            })
         } else {
             instructionBase(i: i, text: text)
         }

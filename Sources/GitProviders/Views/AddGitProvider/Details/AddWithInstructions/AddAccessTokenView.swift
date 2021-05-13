@@ -21,6 +21,7 @@ struct AddAccessTokenView: View, InstructionView {
     
     @State private var username = ""
     @State private var passwordOrAccessToken = ""
+    @State private var iCloudSync = true
     
     @State private var verifiedPerms: [PermScope] = []
     
@@ -114,13 +115,19 @@ struct AddAccessTokenView: View, InstructionView {
             text: "Enter your\(isPassword ? "" : " new") \(hostName) \(isPassword ? "password" : "access token") below:",
             secureInput: (isPassword ? "password" : "access token", $passwordOrAccessToken)
         )
+        instruction(
+            i: startI + 2,
+            text: "Enter your\(isPassword ? "" : " new") \(hostName) \(isPassword ? "password" : "access token") below:",
+            secureInput: (isPassword ? "password" : "access token", $passwordOrAccessToken)
+        )
+        instruction(i: startI + 3, text: "Sync securely over iCloud Keychain? (recommended)", toggle: $iCloudSync)
         if isPassword {
-            forceAddWithoutTestingStep(i: startI + 3)
+            forceAddWithoutTestingStep(i: startI + 4)
         } else {
             if let gitAPI = preset.api {
                 VStack(alignment: .leading, spacing: 7) {
                     HStack {
-                        testingStep(i: startI + 3, with: (username: username, passOrAccessToken: passwordOrAccessToken, gitClient: gitAPI), successMessage: "Access token is successfully setup for \(hostName)!")
+                        testingStep(i: startI + 4, with: (username: username, passOrAccessToken: passwordOrAccessToken, gitClient: gitAPI), successMessage: "Access token is successfully setup for \(hostName)!")
                     }
                     if testingResult == false {
                         if missingRepoContents {
@@ -135,7 +142,7 @@ struct AddAccessTokenView: View, InstructionView {
                     }
                 }
             } else {
-                forceAddWithoutTestingStep(i: startI + 3)
+                forceAddWithoutTestingStep(i: startI + 4)
             }
         }
     }
