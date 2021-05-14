@@ -11,13 +11,25 @@ import GitAPI
 public struct GitCloneOptionsView: View {
     @ObservedObject var gitProviderStore: GitProviderStore
     let appName: String
+    let closeModal: (() -> Void)?
     
     @State private var source = 0
     @State private var repos: [Int : [RepoModel]] = [:]
     @State private var hasDownloaded: [Int : Bool] = [:]
     
     @State private var searchText = ""
-    @State private var showSetup = false
+    @State private var sheetItem: SheetItems? = nil
+    
+    @State private var cloningStatus: CloningStatus? = nil
+    var isCloning: Bool {
+        cloningStatus != nil
+    }
+    
+    enum SheetItems: Int, Identifiable {
+        var id: Int { rawValue }
+        case ProvidersView
+        case CloneModal
+    }
     
     var selectedSource: CloneSource? {
         return sources.first {
@@ -35,24 +47,42 @@ public struct GitCloneOptionsView: View {
     
     public init(
         gitProviderStore: GitProviderStore,
-        appName: String
+        appName: String,
+        closeModal: (() -> Void)? = nil
     ) {
         self.gitProviderStore = gitProviderStore
         self.appName = appName
+        self.closeModal = closeModal
     }
     
     public var body: some View {
         NavigationView {
             mainBody
-                .navigationTitle("Git Clone")
-                .navigationBarItems(trailing: Button(action: {
-                    showSetup = true
-                }, label: {
-                    Image(systemName: "gearshape.fill")
-                }))
+                .navigationBarTitle("Git Clone", displayMode: .inline)
+                .navigationBarItems(
+                    leading: Group {
+                        if let closeModal = closeModal {
+                            Button("Back", action: closeModal)
+                        }
+                    },
+                    trailing: Button(action: {
+                        sheetItem = .ProvidersView
+                    }, label: {
+                        Label("Connections", systemImage: "arrow.up.arrow.down.square.fill")
+                    })
+                )
         }.navigationViewStyle(StackNavigationViewStyle())
-        .sheet(isPresented: $showSetup) {
-            GitProvidersView(gitProviderStore: gitProviderStore, appName: appName)
+        .sheet(item: $sheetItem) { sheetItem in
+            switch sheetItem {
+            case .ProvidersView:
+                GitProvidersView(gitProviderStore: gitProviderStore, appName: appName, closeModal: {
+                    self.sheetItem = nil
+                })
+            case .CloneModal:
+                GitCloneModalView(closeModal: {
+                    self.sheetItem = nil
+                }, cloningStatus: $cloningStatus).modifier(DisableModalDismiss(disabled: isCloning))
+            }
         }
     }
 }
@@ -98,11 +128,34 @@ extension GitCloneOptionsView {
 }
 
 extension GitCloneOptionsView {
+    @ViewBuilder
     func customSegment(selectedSource: CloneSource) -> some View {
+        if gitProviderStore.gitProviders.filter({ $0.isActive }).count == 0 {
+            Section(header: HStack {
+                Text("Your Private Repos on \(selectedSource.name)")
+            }) {
+                Text("No private repos found on your ")
+            }
+        } else {
+            Section(header: HStack {
+                Text("Your Private Repos on \(selectedSource.name)")
+            }) {
+                Text("No private repos found on your ")
+            }
+        }
+        manualClone
+    }
+    
+    @ViewBuilder
+    var manualClone: some View {
         Section(header: HStack {
-            Text("Your Private Repos on \(selectedSource.name)")
+            Text("Other Cloning Options")
         }) {
-            Text("No private repos found on your ")
+            Button(action: {
+                sheetItem = .CloneModal
+            }, label: {
+                Label("Clone from URL", systemImage: "arrow.down.app")
+            })
         }
     }
 }

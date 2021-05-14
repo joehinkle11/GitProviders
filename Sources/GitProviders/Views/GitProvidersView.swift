@@ -12,6 +12,7 @@ public struct GitProvidersView: View {
     
     @ObservedObject var gitProviderStore: GitProviderStore
     let appName: String
+    let closeModal: (() -> Void)?
     
     @State private var showDeleteConfirmationAlert = false
     
@@ -28,10 +29,12 @@ public struct GitProvidersView: View {
     
     public init(
         gitProviderStore: GitProviderStore,
-        appName: String
+        appName: String,
+        closeModal: (() -> Void)? = nil
     ) {
         self.gitProviderStore = gitProviderStore
         self.appName = appName
+        self.closeModal = closeModal
     }
     
     public var body: some View {
@@ -44,8 +47,15 @@ public struct GitProvidersView: View {
         } else {
             NavigationView {
                 mainBody
-                    .navigationTitle("Git Providers")
-                    .navigationBarItems(trailing: isEditable ? EditButton().font(nil) : nil)
+                    .navigationBarTitle("Git Providers", displayMode: .inline)
+                    .navigationBarItems(
+                        leading: Group {
+                            if let closeModal = closeModal {
+                                Button("Back", action: closeModal)
+                            }
+                        },
+                        trailing: isEditable ? EditButton().font(nil) : nil
+                    )
             }.navigationViewStyle(StackNavigationViewStyle())
         }
     }

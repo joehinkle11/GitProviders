@@ -29,6 +29,7 @@ struct AddCustomProvider: View {
             .replacingOccurrences(of: "https://www.", with: "")
             .replacingOccurrences(of: "http://", with: "")
             .replacingOccurrences(of: "https://", with: "")
+            .replacingOccurrences(of: " ", with: "")
             .onlyWeb.lowercased()
     }
     
