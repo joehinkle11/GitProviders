@@ -5,9 +5,14 @@
 //  Created by Joseph Hinkle on 5/12/21.
 //
 
-public struct RepoModel: InternalModel {
-    let name: String
-    let httpsURL: String
-    let sshURL: String
-    let isPrivate: Bool
+import Foundation
+
+public struct RepoModel: InternalModel, Identifiable, Hashable {
+    public var id: Int { hashValue }
+    public let name: String
+    public let httpsURL: String
+    public let sshURL: String
+    public let isPrivate: Bool
+    public let size: Int
+    public let updatedAt: Date
 }

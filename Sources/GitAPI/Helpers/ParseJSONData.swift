@@ -10,6 +10,7 @@ import Foundation
 extension Data {
     func parse<T: Decodable>(as: T.Type) -> T? {
         let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
         do {
             return try decoder.decode(T.self, from: self)
         } catch {

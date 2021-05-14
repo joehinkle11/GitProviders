@@ -7,6 +7,7 @@
 
 import Foundation
 import KeychainAccess
+import GitAPI
 
 // constants
 private let _public_ssh_keys = "_public_ssh_keys"
@@ -20,6 +21,20 @@ struct GitProvider: Identifiable {
     let keychain: Keychain
     
     let currentSSHKeyOfUser: SSHKey?
+    
+    //
+    //
+    //
+    func getRepos(callback: @escaping (_ repos: [RepoModel]?, _ noAPISupport: Bool) -> Void) {
+        if let api = preset.api, let userInfo = accessTokenOrPasswordDataStore.read() {
+            api.userInfo = .init(username: userInfo.username, authToken: userInfo.accessTokenOrPassword)
+            api.fetchUserRepos { repos, _ in
+                callback(repos, false)
+            }
+        } else {
+            callback(nil, true)
+        }
+    }
     
     //
     // data stores

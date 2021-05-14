@@ -13,4 +13,6 @@ struct GitHubRepoModel: GitHubModel {
     let description: String?
     let ssh_url: String
     let clone_url: String
+    let size: Int
+    let updated_at: Date
 }

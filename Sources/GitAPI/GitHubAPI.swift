@@ -51,7 +51,9 @@ public final class GitHubAPI: GitAPI {
                             name: gitHubRepo.name,
                             httpsURL: gitHubRepo.clone_url,
                             sshURL: gitHubRepo.ssh_url,
-                            isPrivate: gitHubRepo.private
+                            isPrivate: gitHubRepo.private,
+                            size: gitHubRepo.size,
+                            updatedAt: gitHubRepo.updated_at
                         ))
                     }
                     callback(repos, nil)
