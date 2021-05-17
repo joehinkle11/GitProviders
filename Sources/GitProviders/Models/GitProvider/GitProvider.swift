@@ -147,6 +147,7 @@ struct GitProvider: Identifiable {
                         accessMethodData: AccessTokenAccessMethodData(
                             username: username,
                             isPassword: isPassword,
+                            providerName: gitProvider.userDescription,
                             getData: {
                                 accessTokenOrPasswordDataStore.read()
                             }
@@ -162,7 +163,12 @@ struct GitProvider: Identifiable {
             return self.allSSHPublicKeys().map { publicKeyData in
                 AccessMethodDetailCell(
                     gitProviderStore: gitProviderStore,
-                    accessMethodData: SSHAccessMethodData(publicKeyData: publicKeyData),
+                    accessMethodData: SSHAccessMethodData(
+                        publicKeyData: publicKeyData,
+                        getData: {
+                            return nil
+                        }
+                    ),
                     accessMethod: accessMethod,
                     gitProvider: gitProvider
                 )

@@ -8,8 +8,10 @@
 import Combine
 
 final class CloningStatus: ObservableObject {
-    // i.e. 48%
-    var percent: String {
-        ""
-    }
+    @Published var status: (
+        success: Bool?,
+        completedObjects: Int?,
+        totalObjects: Int?,
+        message: String?
+    )?
 }

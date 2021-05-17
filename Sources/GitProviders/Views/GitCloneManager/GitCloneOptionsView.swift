@@ -20,9 +20,9 @@ public struct GitCloneOptionsView: View {
     @State private var searchText = ""
     @State private var sheetItem: SheetItems? = nil
     
-    @State private var cloningStatus: CloningStatus? = nil
+    @State private var cloningStatus: CloningStatus = .init()
     var isCloning: Bool {
-        cloningStatus != nil
+        cloningStatus.status != nil
     }
     
     enum SheetItems: Int, Identifiable {
