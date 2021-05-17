@@ -13,6 +13,8 @@ public struct GitProvidersView: View {
     @ObservedObject var gitProviderStore: GitProviderStore
     let appName: String
     let closeModal: (() -> Void)?
+    @State private var openAddNewProvider: Bool
+    let showNoticeOnSecondPage: Bool
     
     @State private var showDeleteConfirmationAlert = false
     
@@ -30,11 +32,14 @@ public struct GitProvidersView: View {
     public init(
         gitProviderStore: GitProviderStore,
         appName: String,
-        closeModal: (() -> Void)? = nil
+        closeModal: (() -> Void)? = nil,
+        autoOpenAddNewProvider: Bool = false
     ) {
         self.gitProviderStore = gitProviderStore
         self.appName = appName
         self.closeModal = closeModal
+        self._openAddNewProvider = .init(initialValue: autoOpenAddNewProvider)
+        self.showNoticeOnSecondPage = autoOpenAddNewProvider
     }
     
     public var body: some View {
@@ -63,7 +68,7 @@ public struct GitProvidersView: View {
 
 extension GitProvidersView {
     var dataNotice: Text {
-        (Text("\(appName) does NOT store any git provider credentials on its servers. Rather, all access tokens, ssh keys, and other sensitve information are stored \(Text("securely").bold()) in your keychain and optionally synced through the iCloud keychain. Such keys are only brought into memory at point of consumption and are otherwise safely stored in the Secure Enclave. Furthermore, \(appName) does NOT sync any repository code keys onto its servers. See our privacy policy for more information.")).font(.footnote)
+        noticeText(appName)
     }
     var connectedProvidersHeader: some View {
         HStack {
@@ -105,7 +110,7 @@ extension GitProvidersView {
                         showDeleteConfirmationAlert = true
                     }
                 }
-                NavigationLink(destination: AddGitProviderView(gitProviderStore: gitProviderStore)) {
+                NavigationLink(destination: AddGitProviderView(gitProviderStore: gitProviderStore, appName: appName, showNotice: showNoticeOnSecondPage), isActive: $openAddNewProvider) {
                     Text("Add New Provider").foregroundColor(.blue)
                 }
             }
@@ -135,4 +140,8 @@ extension GitProvidersView {
             )
         }
     }
+}
+
+func noticeText(_ appName: String) -> Text {
+    (Text("\(appName) does NOT store any git provider credentials on its servers. Rather, all access tokens, ssh keys, and other sensitve information are stored \(Text("securely").bold()) in your keychain and optionally synced through the iCloud keychain. Such keys are only brought into memory at point of consumption and are otherwise safely stored in the Secure Enclave. Furthermore, \(appName) does NOT sync any repository code keys onto its servers. See our privacy policy for more information.")).font(.footnote)
 }

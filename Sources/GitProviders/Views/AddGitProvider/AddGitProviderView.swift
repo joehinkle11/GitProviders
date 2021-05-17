@@ -11,6 +11,8 @@ struct AddGitProviderView: View {
     @ObservedObject var gitProviderStore: GitProviderStore
     
     @State private var showModal = true
+    let appName: String
+    let showNotice: Bool
     
     var presentsNotActive: [GitProviderPresets] {
         [.GitHub,.BitBucket,.GitLab].filter({ preset in
@@ -28,7 +30,7 @@ struct AddGitProviderView: View {
                     AddGitProviderCellView(gitProviderStore: gitProviderStore, preset: preset)
                 }
             }
-            Section(header: Text("Other")) {
+            Section(header: Text("Other"), footer: showNotice ? noticeText(appName) : nil) {
                 AddGitProviderCellView(gitProviderStore: gitProviderStore, preset: .Custom)
             }
         }.listStyle(InsetGroupedListStyle())

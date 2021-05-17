@@ -28,6 +28,7 @@ public struct GitCloneOptionsView: View {
     enum SheetItems: Int, Identifiable {
         var id: Int { rawValue }
         case ProvidersView
+        case ProvidersViewAutoOpenAdd
         case CloneModal
     }
     
@@ -65,19 +66,23 @@ public struct GitCloneOptionsView: View {
                             Button("Back", action: closeModal)
                         }
                     },
-                    trailing: Button(action: {
-                        sheetItem = .ProvidersView
-                    }, label: {
-                        Label("Connections", systemImage: "arrow.up.arrow.down.square.fill")
-                    })
+                    trailing: Group {
+                        if selectedSource?.provider != nil {
+                            Button(action: {
+                                sheetItem = .ProvidersView
+                            }, label: {
+                                Label("Connections", systemImage: "arrow.up.arrow.down.square.fill")
+                            })
+                        }
+                    }
                 )
         }.navigationViewStyle(StackNavigationViewStyle())
         .sheet(item: $sheetItem) { sheetItem in
             switch sheetItem {
-            case .ProvidersView:
+            case .ProvidersView, .ProvidersViewAutoOpenAdd:
                 GitProvidersView(gitProviderStore: gitProviderStore, appName: appName, closeModal: {
                     self.sheetItem = nil
-                })
+                }, autoOpenAddNewProvider: sheetItem == .ProvidersViewAutoOpenAdd)
             case .CloneModal:
                 GitCloneModalView(closeModal: {
                     self.sheetItem = nil
@@ -132,15 +137,13 @@ extension GitCloneOptionsView {
     func customSegment(selectedSource: CloneSource) -> some View {
         if gitProviderStore.gitProviders.filter({ $0.isActive }).count == 0 {
             Section(header: HStack {
-                Text("Your Private Repos on \(selectedSource.name)")
+                Text("Setup")
             }) {
-                Text("No private repos found on your ")
-            }
-        } else {
-            Section(header: HStack {
-                Text("Your Private Repos on \(selectedSource.name)")
-            }) {
-                Text("No private repos found on your ")
+                Button {
+                    sheetItem = .ProvidersViewAutoOpenAdd
+                } label: {
+                    Text("Add Git Provider")
+                }
             }
         }
         manualClone
