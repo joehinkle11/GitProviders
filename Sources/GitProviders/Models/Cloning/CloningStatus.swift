@@ -26,6 +26,8 @@ final class CloningStatus: ObservableObject {
                 }
             } else if let completedObjects = status.completedObjects, let totalObjects = status.totalObjects {
                 ProgressView("Cloning...(\(completedObjects)/\(totalObjects)) objects")
+            } else {
+                ProgressView("Cloning...")
             }
         }
     }

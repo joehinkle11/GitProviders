@@ -21,6 +21,7 @@ public struct GitCloneOptionsView: View {
     @State private var sheetItem: SheetItems? = nil
     
     @State private var selectedRepo: RepoModel? = nil
+    @State private var selectedGitProvider: GitProvider? = nil
     
     @StateObject private var cloningStatus: CloningStatus = .init()
     var isCloning: Bool {
@@ -96,6 +97,7 @@ public struct GitCloneOptionsView: View {
                         self.sheetItem = nil
                     },
                     selectedRepo: $selectedRepo,
+                    fromGitProvider: $selectedGitProvider,
                     credOptions: credOptions,
                     cloningStatus: cloningStatus
                 ).modifier(DisableModalDismiss(disabled: isCloning))
@@ -185,6 +187,7 @@ extension GitCloneOptionsView {
         }) {
             Button(action: {
                 selectedRepo = nil
+                selectedGitProvider = nil
                 sheetItem = .CloneModal
             }, label: {
                 Label("Clone from URL", systemImage: "arrow.down.app")
@@ -248,6 +251,7 @@ extension GitCloneOptionsView {
                         ForEach(privateRepos) { repo in
                             RepoCellView(repo: repo) {
                                 selectedRepo = repo
+                                selectedGitProvider = selectedSource.provider
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                                     sheetItem = .CloneModal
                                 }
@@ -263,6 +267,7 @@ extension GitCloneOptionsView {
                         ForEach(publicRepos) { repo in
                             RepoCellView(repo: repo) {
                                 selectedRepo = repo
+                                selectedGitProvider = selectedSource.provider
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                                     sheetItem = .CloneModal
                                 }
@@ -282,6 +287,7 @@ extension GitCloneOptionsView {
                     ForEach(privateRepos + publicRepos) { repo in
                         RepoCellView(repo: repo) {
                             selectedRepo = repo
+                            selectedGitProvider = selectedSource.provider
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                                 sheetItem = .CloneModal
                             }

@@ -13,12 +13,15 @@ struct GitCloneModalView: View {
     
     let closeModal: () -> Void
     @Binding var selectedRepo: RepoModel?
-    
-    @State var name: String = ""
-    @State var repoURL: String = ""
-    @State var selectedCred: AnyRepositoryAccessMethodData = .init(UnauthenticatedAccessMethodData())
+    @Binding var fromGitProvider: GitProvider?
     @State var credOptions: [AnyRepositoryAccessMethodData]
-    @State var showCredDetails = false
+    
+    @State private var name: String = ""
+    @State private var repoURL: String = ""
+    @State private var repoURL_https: String? = nil
+    @State private var repoURL_ssh: String? = nil
+    @State private var selectedCred: AnyRepositoryAccessMethodData = .init(UnauthenticatedAccessMethodData())
+    @State private var showCredDetails = false
     
     @ObservedObject var cloningStatus: CloningStatus
     var isCloning: Bool {
@@ -84,6 +87,19 @@ struct GitCloneModalView: View {
             ForEach(credOptions) { credOption in
                 Button {
                     selectedCred = credOption
+                    if credOption.raw is SSHAccessMethodData {
+                        if repoURL == repoURL_https && repoURL_https != "" && repoURL_ssh != "" {
+                            if let repoURL_ssh = repoURL_ssh {
+                                repoURL = repoURL_ssh
+                            }
+                        }
+                    } else if credOption.raw is AccessTokenAccessMethodData {
+                        if repoURL == repoURL_ssh && repoURL_https != "" && repoURL_ssh != "" {
+                            if let repoURL_https = repoURL_https {
+                                repoURL = repoURL_https
+                            }
+                        }
+                    }
                     showCredDetails = false
                 } label: {
                     HStack {
@@ -91,6 +107,7 @@ struct GitCloneModalView: View {
                             Image(systemName: "checkmark")
                         }
                         Text(credOption.userDescription)
+                        Spacer()
                     }
                 }
             }
@@ -127,6 +144,14 @@ struct GitCloneModalView: View {
             if let repoModel = selectedRepo {
                 name = repoModel.name
                 repoURL = repoModel.httpsURL
+                selectedRepo = nil
+                repoURL_https = repoModel.httpsURL
+                repoURL_ssh = repoModel.sshURL
+            }
+            if let gitProvider = fromGitProvider,
+               let first = gitProvider.allAnyRepositoryAccessMethodDatas.first {
+                selectedCred = first
+                fromGitProvider = nil
             }
         }
     }
