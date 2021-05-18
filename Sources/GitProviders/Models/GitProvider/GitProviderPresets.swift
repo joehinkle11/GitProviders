@@ -99,7 +99,8 @@ enum GitProviderPresets: String, CaseIterable, Identifiable {
     var supportedContentAccessMethods: [RepositoryAccessMethods] {
         switch self {
         case .GitHub:
-            return [.OAuth, .AccessToken, .SSH]
+//            return [.OAuth, .AccessToken, .SSH]
+            return [.AccessToken, .SSH]
         case .BitBucket:
 //            return [.OAuth, .AccessToken, .SSH, .Password]
             return [.AccessToken, .SSH, .Password]
@@ -110,16 +111,16 @@ enum GitProviderPresets: String, CaseIterable, Identifiable {
             return [.SSH, .AccessToken, .Password]
         }
     }
-    var supportedRepoListAccessMethods: [RepositoryAccessMethods] {
-        switch self {
-        case .GitHub:
-            return [.OAuth, .AccessToken]
-        case .BitBucket:
-            return [.AccessToken]
-        case .GitLab:
-            return [.AccessToken]
-        case .Custom:
-            return []
-        }
-    }
+//    var supportedRepoListAccessMethods: [RepositoryAccessMethods] {
+//        switch self {
+//        case .GitHub:
+//            return [.OAuth, .AccessToken]
+//        case .BitBucket:
+//            return [.AccessToken]
+//        case .GitLab:
+//            return [.AccessToken]
+//        case .Custom:
+//            return []
+//        }
+//    }
 }

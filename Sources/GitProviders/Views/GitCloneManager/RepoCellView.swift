@@ -10,17 +10,20 @@ import GitAPI
 
 struct RepoCellView: View {
     let repo: RepoModel
+    let action: () -> Void
     
     var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(repo.name)
-                Text(repo.sshURL)
-            }
-            Spacer()
-            VStack(alignment: .trailing) {
-                Text(repo.isPrivate ? "private" : "public")
-                Text("\(repo.size / 1000) KB")
+        Button(action: action) {
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(repo.name)
+                    Text(repo.sshURL)
+                }
+                Spacer()
+                VStack(alignment: .trailing) {
+                    Text(repo.isPrivate ? "private" : "public")
+                    Text("\(repo.size / 1000) KB")
+                }
             }
         }
     }

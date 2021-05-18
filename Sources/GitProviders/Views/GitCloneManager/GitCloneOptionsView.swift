@@ -20,7 +20,9 @@ public struct GitCloneOptionsView: View {
     @State private var searchText = ""
     @State private var sheetItem: SheetItems? = nil
     
-    @State private var cloningStatus: CloningStatus = .init()
+    @State private var selectedRepo: RepoModel? = nil
+    
+    @StateObject private var cloningStatus: CloningStatus = .init()
     var isCloning: Bool {
         cloningStatus.status != nil
     }
@@ -59,6 +61,8 @@ public struct GitCloneOptionsView: View {
     public var body: some View {
         NavigationView {
             mainBody
+                .blur(radius: isCloning ? 2.0 : 0)
+                .overlay(cloningStatus.statusOverlay)
                 .navigationBarTitle("Git Clone", displayMode: .inline)
                 .navigationBarItems(
                     leading: Group {
@@ -67,7 +71,7 @@ public struct GitCloneOptionsView: View {
                         }
                     },
                     trailing: Group {
-                        if selectedSource?.provider != nil {
+                        if sources.count > 1 {
                             Button(action: {
                                 sheetItem = .ProvidersView
                             }, label: {
@@ -75,7 +79,7 @@ public struct GitCloneOptionsView: View {
                             })
                         }
                     }
-                )
+                ).disabled(isCloning)
         }.navigationViewStyle(StackNavigationViewStyle())
         .sheet(item: $sheetItem) { sheetItem in
             switch sheetItem {
@@ -84,9 +88,34 @@ public struct GitCloneOptionsView: View {
                     self.sheetItem = nil
                 }, autoOpenAddNewProvider: sheetItem == .ProvidersViewAutoOpenAdd)
             case .CloneModal:
-                GitCloneModalView(closeModal: {
-                    self.sheetItem = nil
-                }, cloningStatus: $cloningStatus).modifier(DisableModalDismiss(disabled: isCloning))
+                let credOptions: [AnyRepositoryAccessMethodData] = gitProviderStore.gitProviders.reduce([], { arr, provider in
+                    arr + provider.allAnyRepositoryAccessMethodDatas
+                }) + [.init(UnauthenticatedAccessMethodData())]
+                GitCloneModalView(
+                    closeModal: {
+                        self.sheetItem = nil
+                    },
+                    selectedRepo: $selectedRepo,
+                    credOptions: credOptions,
+                    cloningStatus: cloningStatus
+                ).modifier(DisableModalDismiss(disabled: isCloning))
+            }
+        }.onChange(of: cloningStatus.status?.success ?? false) { success in
+            if success {
+                sheetItem = nil
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    closeModal?()
+                }
+            }
+        }.onChange(of: cloningStatus.status?.success ?? true) { success in
+            if !success {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    cloningStatus.status = nil
+                }
+            }
+        }.onChange(of: sources.count) { _ in
+            if let first = sources.first {
+                source = first.id
             }
         }
     }
@@ -155,6 +184,7 @@ extension GitCloneOptionsView {
             Text("Other Cloning Options")
         }) {
             Button(action: {
+                selectedRepo = nil
                 sheetItem = .CloneModal
             }, label: {
                 Label("Clone from URL", systemImage: "arrow.down.app")
@@ -208,25 +238,39 @@ extension GitCloneOptionsView {
         }
         Group {
             if searchText == "" {
-                Section(header: HStack {
-                    Text("Your Private Repos on \(selectedSource.name)")
-                }) {
-                    if privateRepos.count == 0 {
-                        Text("No private repos found on your \(provider.userDescription)")
+                if hasDownloaded[source] == true {
+                    Section(header: HStack {
+                        Text("Your Private Repos on \(selectedSource.name)")
+                    }) {
+                        if privateRepos.count == 0 {
+                            Text("No private repos found on your \(provider.userDescription)")
+                        }
+                        ForEach(privateRepos) { repo in
+                            RepoCellView(repo: repo) {
+                                selectedRepo = repo
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    sheetItem = .CloneModal
+                                }
+                            }
+                        }
                     }
-                    ForEach(privateRepos) { repo in
-                        RepoCellView(repo: repo)
+                    Section(header: HStack {
+                        Text("Your Public Repos on \(selectedSource.name)")
+                    }) {
+                        if publicRepos.count == 0 {
+                            Text("No public repos found on your \(provider.userDescription)")
+                        }
+                        ForEach(publicRepos) { repo in
+                            RepoCellView(repo: repo) {
+                                selectedRepo = repo
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    sheetItem = .CloneModal
+                                }
+                            }
+                        }
                     }
-                }
-                Section(header: HStack {
-                    Text("Your Public Repos on \(selectedSource.name)")
-                }) {
-                    if publicRepos.count == 0 {
-                        Text("No public repos found on your \(provider.userDescription)")
-                    }
-                    ForEach(publicRepos) { repo in
-                        RepoCellView(repo: repo)
-                    }
+                } else {
+                    ProgressView()
                 }
             } else {
                 Section(header: HStack {
@@ -236,22 +280,27 @@ extension GitCloneOptionsView {
                         Text("No matches for \(searchText)")
                     }
                     ForEach(privateRepos + publicRepos) { repo in
-                        RepoCellView(repo: repo)
+                        RepoCellView(repo: repo) {
+                            selectedRepo = repo
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                sheetItem = .CloneModal
+                            }
+                        }
                     }
                 }
             }
         }.onAppear {
             if (hasDownloaded[source] ?? false) == false {
-//                provider.getRepos { repos, noAPISupport in
-//                    if let repos = repos {
-//                        self.repos[source] = repos
-//                        hasDownloaded[source] = true
-//                    } else {
-//                        if noAPISupport {
-//                            hasDownloaded[source] = true
-//                        }
-//                    }
-//                }
+                provider.getRepos { repos, noAPISupport in
+                    if let repos = repos {
+                        self.repos[source] = repos
+                        hasDownloaded[source] = true
+                    } else {
+                        if noAPISupport {
+                            hasDownloaded[source] = true
+                        }
+                    }
+                }
             }
         }
     }

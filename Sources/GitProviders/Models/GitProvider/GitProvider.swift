@@ -54,11 +54,9 @@ struct GitProvider: Identifiable {
     var isActive: Bool {
         if sshKeyDataStore.count > 0 {
             return true
+        } else if accessTokenOrPasswordDataStore.exists() {
+            return true
         }
-        // todo
-//        } else if accessTokenDataStore.count > 0 {
-//            return true
-//        }
         return false
     }
     
@@ -212,5 +210,30 @@ struct GitProvider: Identifiable {
     }
     func allSSHPublicKeys() -> Set<Data> {
         sshKeyDataStore.all()
+    }
+    
+    
+    
+    
+    var allAnyRepositoryAccessMethodDatas: [AnyRepositoryAccessMethodData] {
+        var all: [AnyRepositoryAccessMethodData] = []
+        if let data = accessTokenOrPasswordDataStore.read() {
+            all.append(.init(AccessTokenAccessMethodData(
+                username: data.username, isPassword: data.isPassword, providerName: userDescription, getData: {
+                    accessTokenOrPasswordDataStore.read()
+                }
+            )))
+        }
+        if supportsSSH,
+           let sshKey = currentSSHKeyOfUser,
+           let publicKeyData = sshKey.publicKeyData {
+            all.append(.init(SSHAccessMethodData(
+                publicKeyData: publicKeyData,
+                getData: {
+                    sshKey
+                }
+            )))
+        }
+        return all
     }
 }

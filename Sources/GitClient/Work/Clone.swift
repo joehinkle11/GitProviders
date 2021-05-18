@@ -13,11 +13,12 @@ public func clone(
     from remoteURL: URL,
     named nickName: String,
     _ callback: @escaping (
-    _ success: Bool?,
-    _ completedObjects: Int?,
-    _ totalObjects: Int?,
-    _ message: String?
-) -> ()) {
+        _ success: Bool?,
+        _ completedObjects: Int?,
+        _ totalObjects: Int?,
+        _ message: String?
+    ) -> ()) {
+    callback(nil, nil, nil, nil)
     let localUrl = URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true)
         .appendingPathComponent("Documents")
         .appendingPathComponent(nickName)

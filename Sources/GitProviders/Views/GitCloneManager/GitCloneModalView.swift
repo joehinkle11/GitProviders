@@ -7,18 +7,20 @@
 
 import SwiftUI
 import GitClient
+import GitAPI
 
 struct GitCloneModalView: View {
     
     let closeModal: () -> Void
+    @Binding var selectedRepo: RepoModel?
     
     @State var name: String = ""
     @State var repoURL: String = ""
-    @State var selectedCred: AnyRepositoryAccessMethodData? = nil
-    @State var credOptions: [AnyRepositoryAccessMethodData] = [.init(UnauthenticatedAccessMethodData())]
+    @State var selectedCred: AnyRepositoryAccessMethodData = .init(UnauthenticatedAccessMethodData())
+    @State var credOptions: [AnyRepositoryAccessMethodData]
     @State var showCredDetails = false
     
-    @Binding var cloningStatus: CloningStatus
+    @ObservedObject var cloningStatus: CloningStatus
     var isCloning: Bool {
         cloningStatus.status != nil
     }
@@ -36,35 +38,30 @@ struct GitCloneModalView: View {
     }
     
     var usingSSH: Bool {
-        selectedCred?.raw is SSHAccessMethodData
+        selectedCred.raw is SSHAccessMethodData
     }
     
     var body: some View {
         NavigationView {
             mainBody
                 .blur(radius: isCloning ? 2.0 : 0)
-                .overlay(Group {
-                    if let status = cloningStatus.status {
-                        if let completedObjects = status.completedObjects, let totalObjects = status.totalObjects {
-                            ProgressView("Cloning...(\(status.completedObjects)/\(status.totalObjects)) objects")
-                        } else if status {
-                            EmptyView
-                        }
-//                        ProgressView("Cloning...\(status.completedObjects)/\(status.totalObjects)) objects")
-                    }
-                })
+                .overlay(cloningStatus.statusOverlay)
                 .navigationBarTitle("Clone Options", displayMode: .inline)
                 .navigationBarItems(
                     leading: Button("Cancel", action: closeModal),
                     trailing: Button("Clone with \(usingSSH ? "SSH" : "HTTPS")") {
-                        if let credentials = selectedCred?.toSwiftGit2Credentials(),
+                        if let credentials = selectedCred.toSwiftGit2Credentials(),
                            let url = URL(string: repoURL) {
-                            GitClient.clone(
-                                with: credentials,
-                                from: url,
-                                named: name
-                            ) { _, _ ,_ , _ in
-                                self.cloningStatus = .init()
+                            DispatchQueue.global().async {
+                                GitClient.clone(
+                                    with: credentials,
+                                    from: url,
+                                    named: name
+                                ) { success, completedObjects, totalObjects, message in
+                                    DispatchQueue.main.async {
+                                        self.cloningStatus.status = (success, completedObjects, totalObjects, message)
+                                    }
+                                }
                             }
                         } else {
                             fatalError()
@@ -78,16 +75,23 @@ struct GitCloneModalView: View {
         HStack {
             Text("Credentials")
             Spacer()
-            Text(selectedCred?.userDescription ?? "Unauthenticated").font(.footnote).foregroundColor(.gray)
+            Text(selectedCred.userDescription).font(.footnote).foregroundColor(.gray)
         }
     }
     
     var selectCredDetails: some View {
         List {
             ForEach(credOptions) { credOption in
-                Button(credOption.userDescription) {
+                Button {
                     selectedCred = credOption
                     showCredDetails = false
+                } label: {
+                    HStack {
+                        if selectedCred.id == credOption.id {
+                            Image(systemName: "checkmark")
+                        }
+                        Text(credOption.userDescription)
+                    }
                 }
             }
         }.listStyle(InsetGroupedListStyle())
@@ -119,5 +123,11 @@ struct GitCloneModalView: View {
                 }
             }
         }.listStyle(InsetGroupedListStyle())
+        .onAppear {
+            if let repoModel = selectedRepo {
+                name = repoModel.name
+                repoURL = repoModel.httpsURL
+            }
+        }
     }
 }

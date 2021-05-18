@@ -24,20 +24,20 @@ struct AddGitProviderDetailsView: View {
                     NavigationLink(accessMethod.name, destination: accessMethod.addView(for: gitProviderStore, preset: preset, customDetails: customDetails))
                 }
             }
-            Section(header: HStack {
-                Image(systemName: "text.justify")
-                Text("Grant Access to List of Repositories")
-                Spacer()
-            }) {
-                let accessMethods = preset.supportedRepoListAccessMethods
-                if accessMethods.count == 0 {
-                    Text("No repo list access methods supported for \(preset.rawValue) hosts.")
-                } else {
-                    ForEach(accessMethods) { accessMethod in
-                        Text(accessMethod.name)
-                    }
-                }
-            }
+//            Section(header: HStack {
+//                Image(systemName: "text.justify")
+//                Text("Grant Access to List of Repositories")
+//                Spacer()
+//            }) {
+//                let accessMethods = preset.supportedRepoListAccessMethods
+//                if accessMethods.count == 0 {
+//                    Text("No repo list access methods supported for \(preset.rawValue) hosts.")
+//                } else {
+//                    ForEach(accessMethods) { accessMethod in
+//                        Text(accessMethod.name)
+//                    }
+//                }
+//            }
         }.listStyle(InsetGroupedListStyle())
     }
     

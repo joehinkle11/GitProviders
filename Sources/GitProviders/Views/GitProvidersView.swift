@@ -45,8 +45,10 @@ public struct GitProvidersView: View {
     public var body: some View {
         if gitProviderStore.isMovingBackToFirstPage {
             ProgressView().onAppear {
+                openAddNewProvider = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     gitProviderStore.isMovingBackToFirstPage = false
+                    closeModal?()
                 }
             }
         } else {
