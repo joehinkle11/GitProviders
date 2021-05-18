@@ -82,7 +82,9 @@ public struct GitCloneOptionsView: View {
                     }
                 ).disabled(isCloning)
         }.navigationViewStyle(StackNavigationViewStyle())
-        .sheet(item: $sheetItem) { sheetItem in
+        .sheet(item: $sheetItem, onDismiss: {
+            gitProviderStore.refresh()
+        }) { sheetItem in
             switch sheetItem {
             case .ProvidersView, .ProvidersViewAutoOpenAdd:
                 GitProvidersView(gitProviderStore: gitProviderStore, appName: appName, closeModal: {
